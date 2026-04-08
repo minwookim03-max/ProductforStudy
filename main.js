@@ -1182,39 +1182,71 @@ function AddressLookupField({
     if (!trimmedValue) {
       setOptions([]);
       setIsLoading(false);
+      setApiError("");
       return;
     }
 
+    let isCancelled = false;
     setIsLoading(true);
     const timeoutId = window.setTimeout(() => {
-      autocompleteServiceRef.current.getPlacePredictions(
-        {
-          input: trimmedValue + " " + calgarySearchHint,
-          componentRestrictions: { country: "ca" },
-          sessionToken: sessionTokenRef.current,
-        },
-        (predictions, status) => {
-          setIsLoading(false);
-          const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
-          const zeroStatus = window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS;
-
-          if (status === okStatus && predictions) {
-            setOptions(predictions);
-            return;
-          }
-
-          if (status === zeroStatus) {
-            setOptions([]);
-            return;
-          }
-
-          setOptions([]);
-          setApiError("Google Places could not return address suggestions right now.");
+      const requestTimeoutId = window.setTimeout(() => {
+        if (isCancelled) {
+          return;
         }
-      );
+        setIsLoading(false);
+        setOptions([]);
+        setApiError("Google Places request timed out. Check API key restrictions or local network access.");
+      }, 5000);
+
+      try {
+        autocompleteServiceRef.current.getPlacePredictions(
+          {
+            input: trimmedValue + " " + calgarySearchHint,
+            componentRestrictions: { country: "ca" },
+            sessionToken: sessionTokenRef.current,
+          },
+          (predictions, status) => {
+            if (isCancelled) {
+              return;
+            }
+
+            window.clearTimeout(requestTimeoutId);
+            setIsLoading(false);
+
+            const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
+            const zeroStatus = window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS;
+
+            if (status === okStatus && predictions) {
+              setOptions(predictions);
+              setApiError("");
+              return;
+            }
+
+            setOptions([]);
+
+            if (status === zeroStatus) {
+              setApiError("");
+              return;
+            }
+
+            setApiError(status ? "Google Places request failed: " + status : "Google Places could not return address suggestions right now.");
+          }
+        );
+      } catch (error) {
+        window.clearTimeout(requestTimeoutId);
+        if (isCancelled) {
+          return;
+        }
+        setIsLoading(false);
+        setOptions([]);
+        setApiError(error?.message || "Google Places could not return address suggestions right now.");
+      }
     }, 250);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [value]);
 
   function selectPrediction(prediction) {
