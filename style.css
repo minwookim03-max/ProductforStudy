@@ -684,23 +684,46 @@ button {
 
 .address-results {
   display: grid;
-  gap: 10px;
+  gap: 3px;
+  max-height: 640px;
+  overflow-y: auto;
 }
 
 .address-option {
   display: grid;
-  gap: 4px;
-  padding: 14px 16px;
+  width: 100%;
+  min-height: 0;
+  gap: 1px;
+  margin: 0;
+  padding: 6px 8px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: rgba(255, 252, 248, 0.94);
   text-align: left;
   color: var(--ink);
+  font-size: 0.8rem;
+  line-height: 1;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.address-option strong,
+.address-option span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.address-option strong {
+  font-size: 0.82rem;
+  line-height: 1.05;
 }
 
 .address-option span {
   color: var(--ink-soft);
-  font-size: 0.92rem;
+  font-size: 0.72rem;
+  line-height: 1.05;
 }
 
 .selected-address-card {

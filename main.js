@@ -22,6 +22,8 @@ const valueProps = [
   },
 ];
 
+const MAX_ADDRESS_RESULTS = 10;
+
 const categories = [
   { id: "produce", name: "Fresh Produce", itemCount: 34, accent: "Crisp greens, pears, mushrooms" },
   { id: "pantry", name: "Pantry Staples", itemCount: 112, accent: "Gochujang, rice, noodles, seaweed" },
@@ -520,6 +522,7 @@ function RegisterPage({ navigateTo }) {
   const [contactNumber, setContactNumber] = useState("");
   const [streetNumber, setStreetNumber] = useState("");
   const [selectedAddress, setSelectedAddress] = useState("");
+  const [unitDetails, setUnitDetails] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -672,6 +675,14 @@ function RegisterPage({ navigateTo }) {
             selectionError: errors.address,
             fieldError: errors.streetNumber,
             onSelect: handleAddressSelect,
+          }),
+          h(FormField, {
+            label: "Apt / Unit (Optional)",
+            value: unitDetails,
+            placeholder: "Unit 302, Apt 12B, Suite 5",
+            autoComplete: "address-line2",
+            readOnly: false,
+            onChange: (event) => setUnitDetails(event.target.value),
           }),
           h(FormField, {
             label: "Postal Code",
@@ -1179,7 +1190,7 @@ function AddressLookupField({
     }
 
     const trimmedValue = value.trim();
-    if (!trimmedValue) {
+    if (!trimmedValue || selectedAddress) {
       setOptions([]);
       setIsLoading(false);
       setApiError("");
@@ -1217,7 +1228,7 @@ function AddressLookupField({
             const zeroStatus = window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS;
 
             if (status === okStatus && predictions) {
-              setOptions(predictions);
+              setOptions(predictions.slice(0, MAX_ADDRESS_RESULTS));
               setApiError("");
               return;
             }
@@ -1229,7 +1240,7 @@ function AddressLookupField({
               return;
             }
 
-            setApiError(status ? "Google Places request failed: " + status : "Google Places could not return address suggestions right now.");
+            setApiError("");
           }
         );
       } catch (error) {
@@ -1247,7 +1258,7 @@ function AddressLookupField({
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [value]);
+  }, [selectedAddress, value]);
 
   function selectPrediction(prediction) {
     if (!placesServiceRef.current) {
@@ -1311,7 +1322,7 @@ function AddressLookupField({
       ? h(
           "div",
           { className: "selected-address-card" },
-          h("span", { className: "selected-address-label" }, "Selected address"),
+          h("span", { className: "selected-address-label" }, "Selected Address"),
           h("strong", null, selectedAddress)
         )
       : null,
