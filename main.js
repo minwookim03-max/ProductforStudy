@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "https://esm.sh/react@18.3.1";
+import React, { useEffect, useRef, useState } from "https://esm.sh/react@18.3.1";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
 
 const marketStats = [
@@ -112,6 +112,66 @@ const sellerHighlights = [
 
 const checkoutSteps = ["Basket", "Delivery", "Payment", "Review"];
 
+const calgarySearchHint = "Calgary, Alberta, Canada";
+let googleMapsScriptPromise;
+
+function getGoogleMapsApiKey() {
+  return window.APP_CONFIG?.googleMapsApiKey || window.GOOGLE_MAPS_API_KEY || "";
+}
+
+function loadGooglePlacesLibrary() {
+  if (window.google?.maps?.places) {
+    return Promise.resolve(window.google.maps);
+  }
+
+  if (googleMapsScriptPromise) {
+    return googleMapsScriptPromise;
+  }
+
+  const apiKey = getGoogleMapsApiKey();
+  if (!apiKey) {
+    return Promise.reject(
+      new Error("Missing Google Maps API key. Set window.APP_CONFIG.googleMapsApiKey in index.html.")
+    );
+  }
+
+  googleMapsScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src =
+      "https://maps.googleapis.com/maps/api/js?key=" +
+      encodeURIComponent(apiKey) +
+      "&libraries=places&v=weekly";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.google?.maps?.places) {
+        resolve(window.google.maps);
+        return;
+      }
+      reject(new Error("Google Places library failed to initialize."));
+    };
+    script.onerror = () => reject(new Error("Failed to load Google Places script."));
+    document.head.appendChild(script);
+  });
+
+  return googleMapsScriptPromise;
+}
+
+function extractAddressDetails(place) {
+  const components = place.address_components || [];
+  const streetNumber =
+    components.find((component) => component.types.includes("street_number"))?.long_name || "";
+  const postalCode =
+    components.find((component) => component.types.includes("postal_code"))?.long_name || "";
+
+  return {
+    streetNumber,
+    formattedAddress: place.formatted_address || "",
+    postalCode,
+  };
+}
+
+
 function money(value) {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
@@ -125,6 +185,11 @@ function h(type, props, ...children) {
 }
 
 function App() {
+  const [route, setRoute] = useState(
+    window.location.pathname === "/login" || window.location.pathname === "/register"
+      ? window.location.pathname
+      : "/"
+  );
   const [page, setPage] = useState("home");
   const [selectedCategory, setSelectedCategory] = useState("pantry");
   const [selectedProductId, setSelectedProductId] = useState(1);
@@ -147,8 +212,33 @@ function App() {
   const freeDeliveryGap = Math.max(0, 100 - subtotal);
 
   useEffect(() => {
-    document.title = "Seoul Basket Calgary Marketplace";
+    document.title =
+      route === "/login"
+        ? "Login | Seoul Basket"
+        : route === "/register"
+          ? "Register | Seoul Basket"
+          : "Seoul Basket Calgary Marketplace";
+  }, [route]);
+
+  useEffect(() => {
+    function syncRoute() {
+      setRoute(
+        window.location.pathname === "/login" || window.location.pathname === "/register"
+          ? window.location.pathname
+          : "/"
+      );
+    }
+
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
   }, []);
+
+  function navigateTo(nextRoute) {
+    if (window.location.pathname !== nextRoute) {
+      window.history.pushState({}, "", nextRoute);
+    }
+    setRoute(nextRoute === "/login" || nextRoute === "/register" ? nextRoute : "/");
+  }
 
   function openCategory(categoryId) {
     setSelectedCategory(categoryId);
@@ -194,55 +284,68 @@ function App() {
     h(Header, {
       page,
       setPage,
+      route,
+      navigateTo,
       cartCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
     }),
     h(
       "main",
-      { className: "content-shell" },
-      page === "home" &&
-        h(HomePage, {
-          setPage,
-          openCategory,
-          openProduct,
-        }),
-      page === "category" &&
-        h(CategoryPage, {
-          categories,
-          selectedCategory,
-          filteredProducts,
-          openCategory,
-          openProduct,
-        }),
-      page === "product" &&
-        h(ProductPage, {
-          product: selectedProduct,
-          openCategory,
-          addToCart,
-        }),
-      page === "cart" &&
-        h(CartPage, {
-          cartDetails,
-          subtotal,
-          deliveryFee,
-          total,
-          pointsEarned,
-          freeDeliveryGap,
-          updateQuantity,
-          setPage,
-        }),
-      page === "checkout" &&
-        h(CheckoutPage, {
-          cartDetails,
-          subtotal,
-          deliveryFee,
-          total,
-          pointsEarned,
-        })
+      {
+        className:
+          route === "/login" || route === "/register"
+            ? "content-shell content-shell-login"
+            : "content-shell",
+      },
+      route === "/login"
+        ? h(LoginPage, { navigateTo })
+        : route === "/register"
+          ? h(RegisterPage, { navigateTo })
+          : [
+            page === "home" &&
+              h(HomePage, {
+                setPage,
+                openCategory,
+                openProduct,
+              }),
+            page === "category" &&
+              h(CategoryPage, {
+                categories,
+                selectedCategory,
+                filteredProducts,
+                openCategory,
+                openProduct,
+              }),
+            page === "product" &&
+              h(ProductPage, {
+                product: selectedProduct,
+                openCategory,
+                addToCart,
+              }),
+            page === "cart" &&
+              h(CartPage, {
+                cartDetails,
+                subtotal,
+                deliveryFee,
+                total,
+                pointsEarned,
+                freeDeliveryGap,
+                updateQuantity,
+                setPage,
+              }),
+            page === "checkout" &&
+              h(CheckoutPage, {
+                cartDetails,
+                subtotal,
+                deliveryFee,
+                total,
+                pointsEarned,
+              }),
+          ]
     )
   );
 }
 
-function Header({ page, setPage, cartCount }) {
+function Header({ page, setPage, route, navigateTo, cartCount }) {
   const navItems = [
     { id: "home", label: "Home" },
     { id: "category", label: "Categories" },
@@ -256,7 +359,15 @@ function Header({ page, setPage, cartCount }) {
     { className: "site-header" },
     h(
       "div",
-      { className: "brand-block", onClick: () => setPage("home"), role: "button", tabIndex: 0 },
+      {
+        className: "brand-block",
+        onClick: () => {
+          navigateTo("/");
+          setPage("home");
+        },
+        role: "button",
+        tabIndex: 0,
+      },
       h("span", { className: "brand-kicker" }, "Calgary Korean Marketplace"),
       h("strong", { className: "brand-title" }, "Seoul Basket")
     ),
@@ -277,9 +388,340 @@ function Header({ page, setPage, cartCount }) {
       )
     ),
     h(
-      "button",
-      { className: "cart-pill", type: "button", onClick: () => setPage("cart") },
-      `Cart ${cartCount}`
+      "div",
+      { className: "header-actions" },
+      h(
+        "button",
+        { className: "login-pill", type: "button", onClick: () => navigateTo("/login") },
+        "Login"
+      ),
+      h(
+        "button",
+        { className: "cart-pill", type: "button", onClick: () => setPage("cart") },
+        `Cart ${cartCount}`
+      )
+    )
+  );
+}
+
+function LoginPage({ navigateTo }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const nextErrors = {};
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      nextErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!password) {
+      nextErrors.password = "Password is required.";
+    } else if (password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters.";
+    }
+
+    setErrors(nextErrors);
+    setSubmitted(true);
+  }
+
+  return h(
+    "section",
+    { className: "login-shell" },
+    h(
+      "div",
+      { className: "login-promo" },
+      h("p", { className: "eyebrow" }, "Member sign in"),
+      h("h1", null, "Sign in to keep your Calgary grocery basket, rewards, and delivery preferences in sync."),
+      h(
+        "p",
+        { className: "hero-text" },
+        "Track repeat orders, collect marketplace reward points, and save delivery addresses across local Korean grocery sellers."
+      ),
+      h(
+        "div",
+        { className: "login-benefits" },
+        h("span", { className: "benefit-chip" }, "Home delivery tracking"),
+        h("span", { className: "benefit-chip" }, "Free delivery over CA$100"),
+        h("span", { className: "benefit-chip" }, "Reward point history")
+      )
+    ),
+    h(
+      "div",
+      { className: "login-card" },
+      h(
+        "div",
+        { className: "auth-card-header" },
+        h("p", { className: "eyebrow" }, "Welcome back"),
+        h("h2", null, "Login"),
+        h("p", { className: "auth-subcopy" }, "Use your saved account to continue checkout faster and keep your delivery preferences synced.")
+      ),
+      h(
+        "form",
+        { className: "login-form", onSubmit: handleSubmit, noValidate: true },
+        h(
+          "div",
+          { className: "auth-field-group" },
+          h(FormField, {
+            label: "Email",
+            value: email,
+            type: "email",
+            placeholder: "you@example.com",
+            autoComplete: "email",
+            readOnly: false,
+            error: errors.email,
+            onChange: (event) => setEmail(event.target.value),
+          }),
+          h(FormField, {
+            label: "Password",
+            value: password,
+            type: "password",
+            placeholder: "Enter your password",
+            autoComplete: "current-password",
+            readOnly: false,
+            error: errors.password,
+            onChange: (event) => setPassword(event.target.value),
+          })
+        ),
+        submitted && Object.keys(errors).length > 0
+          ? h("p", { className: "auth-banner auth-banner-error", role: "alert" }, "Please fix the highlighted fields before continuing.")
+          : h("p", { className: "auth-banner" }, "Secure sign in for marketplace orders, saved addresses, and reward history."),
+        h("button", { className: "button-primary full-width auth-submit", type: "submit" }, "Login"),
+        h(
+          "div",
+          { className: "login-links" },
+          h("a", { href: "#forgot", className: "text-link" }, "Forgot password?"),
+          h(
+            "button",
+            { className: "text-link text-link-button", type: "button", onClick: () => navigateTo("/register") },
+            "Create account"
+          )
+        )
+      ),
+      h(
+        "button",
+        { className: "button-secondary full-width auth-secondary", type: "button", onClick: () => navigateTo("/") },
+        "Back to marketplace"
+      )
+    )
+  );
+}
+
+function RegisterPage({ navigateTo }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [streetNumber, setStreetNumber] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleStreetNumberChange(event) {
+    setStreetNumber(event.target.value);
+    setSelectedAddress("");
+    setPostalCode("");
+  }
+
+  function handleAddressSelect(result) {
+    if (result.streetNumber) {
+      setStreetNumber(result.streetNumber);
+    }
+    setSelectedAddress(result.formattedAddress);
+    setPostalCode(result.postalCode);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const nextErrors = {};
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedContactNumber = contactNumber.trim();
+    const trimmedStreetNumber = streetNumber.trim();
+    const trimmedPostalCode = postalCode.trim().toUpperCase();
+
+    if (!trimmedName) {
+      nextErrors.name = "Name is required.";
+    } else if (trimmedName.length < 2) {
+      nextErrors.name = "Enter your full name.";
+    }
+
+    if (!trimmedEmail) {
+      nextErrors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!trimmedContactNumber) {
+      nextErrors.contactNumber = "Contact number is required.";
+    } else if (!/^[0-9+()\-\s]{10,}$/.test(trimmedContactNumber)) {
+      nextErrors.contactNumber = "Enter a valid phone number.";
+    }
+
+    if (!trimmedStreetNumber) {
+      nextErrors.streetNumber = "Street number is required.";
+    }
+
+    if (!selectedAddress) {
+      nextErrors.address = "Select a Google Places address from the search results.";
+    }
+
+    if (!trimmedPostalCode) {
+      nextErrors.postalCode = "Postal Code is required.";
+    } else if (!/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/.test(trimmedPostalCode)) {
+      nextErrors.postalCode = "Enter a valid Canadian postal code.";
+    }
+
+    if (!password) {
+      nextErrors.password = "Password is required.";
+    } else if (password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters.";
+    }
+
+    if (!confirmPassword) {
+      nextErrors.confirmPassword = "Please confirm your password.";
+    } else if (confirmPassword !== password) {
+      nextErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    setErrors(nextErrors);
+    setSubmitted(true);
+  }
+
+  return h(
+    "section",
+    { className: "login-shell" },
+    h(
+      "div",
+      { className: "login-promo" },
+      h("p", { className: "eyebrow" }, "Create your account"),
+      h("h1", null, "Join Seoul Basket to save delivery details, track orders, and collect marketplace rewards."),
+      h(
+        "p",
+        { className: "hero-text" },
+        "Create a customer account once and use it across Calgary Korean grocery sellers, repeat baskets, and member-only promotions."
+      ),
+      h(
+        "div",
+        { className: "login-benefits" },
+        h("span", { className: "benefit-chip" }, "Faster checkout"),
+        h("span", { className: "benefit-chip" }, "Saved addresses"),
+        h("span", { className: "benefit-chip" }, "Reward point balance")
+      )
+    ),
+    h(
+      "div",
+      { className: "login-card" },
+      h(
+        "div",
+        { className: "auth-card-header" },
+        h("p", { className: "eyebrow" }, "New member"),
+        h("h2", null, "Register"),
+        h("p", { className: "auth-subcopy" }, "Create an account to save your basket, speed up checkout, and manage reward points across sellers.")
+      ),
+      h(
+        "form",
+        { className: "login-form", onSubmit: handleSubmit, noValidate: true },
+        h(
+          "div",
+          { className: "auth-field-group" },
+          h(FormField, {
+            label: "Name",
+            value: name,
+            placeholder: "Your full name",
+            readOnly: false,
+            error: errors.name,
+            onChange: (event) => setName(event.target.value),
+          }),
+          h(FormField, {
+            label: "Email",
+            value: email,
+            type: "email",
+            placeholder: "you@example.com",
+            autoComplete: "email",
+            readOnly: false,
+            error: errors.email,
+            onChange: (event) => setEmail(event.target.value),
+          }),
+          h(FormField, {
+            label: "Contact number",
+            value: contactNumber,
+            type: "tel",
+            placeholder: "(403) 555-0197",
+            autoComplete: "tel",
+            readOnly: false,
+            error: errors.contactNumber,
+            onChange: (event) => setContactNumber(event.target.value),
+          }),
+          h(AddressLookupField, {
+            label: "Street number",
+            value: streetNumber,
+            placeholder: "Enter street number, e.g. 1423",
+            onChange: handleStreetNumberChange,
+            selectedAddress,
+            selectionError: errors.address,
+            fieldError: errors.streetNumber,
+            onSelect: handleAddressSelect,
+          }),
+          h(FormField, {
+            label: "Postal Code",
+            value: postalCode,
+            placeholder: "T2N 1N4",
+            autoComplete: "postal-code",
+            readOnly: false,
+            error: errors.postalCode,
+            onChange: (event) => setPostalCode(event.target.value.toUpperCase()),
+          }),
+          h(FormField, {
+            label: "Password",
+            value: password,
+            type: "password",
+            placeholder: "Create a password",
+            autoComplete: "new-password",
+            readOnly: false,
+            error: errors.password,
+            onChange: (event) => setPassword(event.target.value),
+          }),
+          h(FormField, {
+            label: "Confirm password",
+            value: confirmPassword,
+            type: "password",
+            placeholder: "Confirm your password",
+            autoComplete: "new-password",
+            readOnly: false,
+            error: errors.confirmPassword,
+            onChange: (event) => setConfirmPassword(event.target.value),
+          })
+        ),
+        submitted && Object.keys(errors).length > 0
+          ? h("p", { className: "auth-banner auth-banner-error", role: "alert" }, "Please fix the highlighted fields before creating your account.")
+          : h("p", { className: "auth-banner" }, "Google Places will suggest Calgary-area addresses as you type your street number and fill the postal code after selection."),
+        h("button", { className: "button-primary full-width auth-submit", type: "submit" }, "Register"),
+        h(
+          "div",
+          { className: "login-links" },
+          h(
+            "button",
+            { className: "text-link text-link-button", type: "button", onClick: () => navigateTo("/login") },
+            "Already have an account?"
+          )
+        )
+      ),
+      h(
+        "button",
+        { className: "button-secondary full-width auth-secondary", type: "button", onClick: () => navigateTo("/") },
+        "Back to marketplace"
+      )
     )
   );
 }
@@ -678,12 +1120,191 @@ function SummaryRow({ label, value, emphasized }) {
   );
 }
 
-function FormField({ label, value }) {
+function AddressLookupField({
+  label,
+  value,
+  placeholder,
+  onChange,
+  selectedAddress,
+  selectionError,
+  fieldError,
+  onSelect,
+}) {
+  const [options, setOptions] = useState([]);
+  const [apiError, setApiError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const autocompleteServiceRef = useRef(null);
+  const placesServiceRef = useRef(null);
+  const sessionTokenRef = useRef(null);
+  const placesContainerRef = useRef(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    loadGooglePlacesLibrary()
+      .then((maps) => {
+        if (!isActive) {
+          return;
+        }
+
+        if (!autocompleteServiceRef.current) {
+          autocompleteServiceRef.current = new maps.places.AutocompleteService();
+        }
+
+        if (!placesServiceRef.current && placesContainerRef.current) {
+          placesServiceRef.current = new maps.places.PlacesService(placesContainerRef.current);
+        }
+
+        if (!sessionTokenRef.current) {
+          sessionTokenRef.current = new maps.places.AutocompleteSessionToken();
+        }
+
+        setApiError("");
+      })
+      .catch((error) => {
+        if (!isActive) {
+          return;
+        }
+        setApiError(error.message);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!autocompleteServiceRef.current) {
+      return;
+    }
+
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+      setOptions([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    const timeoutId = window.setTimeout(() => {
+      autocompleteServiceRef.current.getPlacePredictions(
+        {
+          input: trimmedValue + " " + calgarySearchHint,
+          componentRestrictions: { country: "ca" },
+          sessionToken: sessionTokenRef.current,
+        },
+        (predictions, status) => {
+          setIsLoading(false);
+          const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
+          const zeroStatus = window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS;
+
+          if (status === okStatus && predictions) {
+            setOptions(predictions);
+            return;
+          }
+
+          if (status === zeroStatus) {
+            setOptions([]);
+            return;
+          }
+
+          setOptions([]);
+          setApiError("Google Places could not return address suggestions right now.");
+        }
+      );
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [value]);
+
+  function selectPrediction(prediction) {
+    if (!placesServiceRef.current) {
+      setApiError("Place details service is not ready yet.");
+      return;
+    }
+
+    placesServiceRef.current.getDetails(
+      {
+        placeId: prediction.place_id,
+        fields: ["formatted_address", "address_components"],
+        sessionToken: sessionTokenRef.current,
+      },
+      (place, status) => {
+        const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
+        if (status !== okStatus || !place) {
+          setApiError("Google Places could not load the selected address.");
+          return;
+        }
+
+        onSelect(extractAddressDetails(place));
+        setOptions([]);
+        sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+        setApiError("");
+      }
+    );
+  }
+
+  const isInvalid = Boolean(fieldError || selectionError || apiError);
+
   return h(
     "label",
-    { className: "form-field" },
+    { className: isInvalid ? "form-field form-field-address is-invalid" : "form-field form-field-address" },
     h("span", null, label),
-    h("input", { type: "text", value, readOnly: true })
+    h("input", { type: "text", value, placeholder, onChange, autoComplete: "address-line1", "aria-invalid": isInvalid }),
+    h("div", { ref: placesContainerRef, className: "places-attribution-anchor", "aria-hidden": "true" }),
+    h("small", { className: "field-hint" }, "Uses Google Places. Enter a street number to fetch Calgary-area address suggestions."),
+    isLoading ? h("small", { className: "field-hint" }, "Searching addresses...") : null,
+    options.length > 0
+      ? h(
+          "div",
+          { className: "address-results" },
+          options.map((prediction) =>
+            h(
+              "button",
+              {
+                key: prediction.place_id,
+                className: "address-option",
+                type: "button",
+                onClick: () => selectPrediction(prediction),
+              },
+              h("strong", null, prediction.structured_formatting?.main_text || prediction.description),
+              h("span", null, prediction.structured_formatting?.secondary_text || prediction.description)
+            )
+          )
+        )
+      : value.trim().length > 0 && !selectedAddress && !isLoading && !apiError
+        ? h("small", { className: "field-hint" }, "No matching Google Places results yet. Try adding more of the street number or nearby address context.")
+        : null,
+    selectedAddress
+      ? h(
+          "div",
+          { className: "selected-address-card" },
+          h("span", { className: "selected-address-label" }, "Selected address"),
+          h("strong", null, selectedAddress)
+        )
+      : null,
+    fieldError ? h("small", { className: "field-error", role: "alert" }, fieldError) : null,
+    selectionError ? h("small", { className: "field-error", role: "alert" }, selectionError) : null,
+    apiError ? h("small", { className: "field-error", role: "alert" }, apiError) : null
+  );
+}
+
+function FormField({
+  label,
+  value,
+  type = "text",
+  placeholder = "",
+  autoComplete,
+  readOnly = true,
+  onChange,
+  error,
+}) {
+  return h(
+    "label",
+    { className: error ? "form-field is-invalid" : "form-field" },
+    h("span", null, label),
+    h("input", { type, value, placeholder, autoComplete, readOnly, onChange, "aria-invalid": Boolean(error) }),
+    error ? h("small", { className: "field-error", role: "alert" }, error) : null
   );
 }
 
