@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "https://esm.sh/react@18.3.1";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+window.__APP_BUILD__ = "2026-04-10-register-copy-1";
+
 
 const marketStats = [
   { label: "Local sellers", value: "48+" },
@@ -716,7 +718,7 @@ function RegisterPage({ navigateTo }) {
         ),
         submitted && Object.keys(errors).length > 0
           ? h("p", { className: "auth-banner auth-banner-error", role: "alert" }, "Please fix the highlighted fields before creating your account.")
-          : h("p", { className: "auth-banner" }, "Google Places will suggest Calgary-area addresses as you type your street number and fill the postal code after selection."),
+          : null,
         h("button", { className: "button-primary full-width auth-submit", type: "submit" }, "Register"),
         h(
           "div",
@@ -1295,7 +1297,6 @@ function AddressLookupField({
     h("span", null, label),
     h("input", { type: "text", value, placeholder, onChange, autoComplete: "address-line1", "aria-invalid": isInvalid }),
     h("div", { ref: placesContainerRef, className: "places-attribution-anchor", "aria-hidden": "true" }),
-    h("small", { className: "field-hint" }, "Uses Google Places. Enter a street number to fetch Calgary-area address suggestions."),
     isLoading ? h("small", { className: "field-hint" }, "Searching addresses...") : null,
     options.length > 0
       ? h(
@@ -1316,7 +1317,7 @@ function AddressLookupField({
           )
         )
       : value.trim().length > 0 && !selectedAddress && !isLoading && !apiError
-        ? h("small", { className: "field-hint" }, "No matching Google Places results yet. Try adding more of the street number or nearby address context.")
+        ? h("small", { className: "field-hint" }, "No matching address results yet. Try adding more of the street number or nearby address context.")
         : null,
     selectedAddress
       ? h(
