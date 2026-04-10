@@ -415,8 +415,11 @@ function Header({ page, setPage, route, navigateTo, cartCount }) {
         role: "button",
         tabIndex: 0,
       },
-      h("span", { className: "brand-kicker" }, "Calgary Korean Marketplace"),
-      h("strong", { className: "brand-title" }, "Seoul Basket")
+      h("img", {
+        className: "brand-logo",
+        src: "./assets/Seoul-Basket-Logo-header-captured.png",
+        alt: "Seoul Basket Korean marketplace logo",
+      })
     ),
     h(
       "nav",
@@ -793,7 +796,7 @@ function HomePage({ setPage, openCategory, openProduct }) {
         "div",
         { className: "hero-copy" },
         h("p", { className: "eyebrow" }, "Marketplace for Calgary's Korean grocery community"),
-        h("h1", null, "Order local Korean groceries, specialty pantry staples, and family meals from trusted Calgary sellers."),
+        h("h1", { className: "hero-home-title" }, "Order local Korean groceries, specialty pantry staples, and family meals from trusted Calgary sellers."),
         h(
           "p",
           { className: "hero-text" },
