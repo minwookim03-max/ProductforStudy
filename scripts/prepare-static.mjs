@@ -18,6 +18,22 @@ if (!outDir || !version) {
 
 const repoRoot = process.cwd();
 const files = ["index.html", "main.js", "style.css"];
+const directories = ["assets"];
+
+function copyDirectory(sourceDir, targetDir) {
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const targetPath = path.join(targetDir, entry.name);
+
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, targetPath);
+    } else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
@@ -32,6 +48,13 @@ for (const file of files) {
   }
 
   fs.writeFileSync(targetPath, contents);
+}
+
+for (const directory of directories) {
+  const sourceDir = path.join(repoRoot, directory);
+  if (fs.existsSync(sourceDir)) {
+    copyDirectory(sourceDir, path.join(outDir, directory));
+  }
 }
 
 const indexContents = fs.readFileSync(path.join(outDir, "index.html"), "utf8");
