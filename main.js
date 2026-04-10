@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "https://esm.sh/react@18.3.1";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
-window.__APP_BUILD__ = "2026-04-10-register-copy-1";
-
 
 const marketStats = [
   { label: "Local sellers", value: "48+" },
@@ -188,12 +186,57 @@ function h(type, props, ...children) {
   return React.createElement(type, props, ...children);
 }
 
+function normalizePathname(pathname) {
+  if (!pathname || pathname === "/") {
+    return "/";
+  }
+
+  return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
+function getAppRoute(pathname = window.location.pathname) {
+  const normalized = normalizePathname(pathname);
+
+  if (normalized === "/login" || normalized.endsWith("/login")) {
+    return "/login";
+  }
+
+  if (normalized === "/register" || normalized.endsWith("/register")) {
+    return "/register";
+  }
+
+  return "/";
+}
+
+function getAppBasePath(pathname = window.location.pathname) {
+  const normalized = normalizePathname(pathname);
+
+  if (normalized === "/") {
+    return "/";
+  }
+
+  if (normalized.endsWith("/login")) {
+    return normalized.slice(0, -"/login".length) || "/";
+  }
+
+  if (normalized.endsWith("/register")) {
+    return normalized.slice(0, -"/register".length) || "/";
+  }
+
+  return normalized;
+}
+
+function buildAppPath(basePath, route) {
+  if (route === "/") {
+    return basePath === "/" ? "/" : `${basePath}/`;
+  }
+
+  return basePath === "/" ? route : `${basePath}${route}`;
+}
+
 function App() {
-  const [route, setRoute] = useState(
-    window.location.pathname === "/login" || window.location.pathname === "/register"
-      ? window.location.pathname
-      : "/"
-  );
+  const [basePath] = useState(() => getAppBasePath());
+  const [route, setRoute] = useState(() => getAppRoute());
   const [page, setPage] = useState("home");
   const [selectedCategory, setSelectedCategory] = useState("pantry");
   const [selectedProductId, setSelectedProductId] = useState(1);
@@ -226,11 +269,7 @@ function App() {
 
   useEffect(() => {
     function syncRoute() {
-      setRoute(
-        window.location.pathname === "/login" || window.location.pathname === "/register"
-          ? window.location.pathname
-          : "/"
-      );
+      setRoute(getAppRoute());
     }
 
     window.addEventListener("popstate", syncRoute);
@@ -238,10 +277,14 @@ function App() {
   }, []);
 
   function navigateTo(nextRoute) {
-    if (window.location.pathname !== nextRoute) {
-      window.history.pushState({}, "", nextRoute);
+    const normalizedRoute = nextRoute === "/login" || nextRoute === "/register" ? nextRoute : "/";
+    const targetPath = buildAppPath(basePath, normalizedRoute);
+
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, "", targetPath);
     }
-    setRoute(nextRoute === "/login" || nextRoute === "/register" ? nextRoute : "/");
+
+    setRoute(normalizedRoute);
   }
 
   function openCategory(categoryId) {

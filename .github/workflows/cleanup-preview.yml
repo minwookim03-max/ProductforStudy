@@ -1,0 +1,42 @@
+name: Cleanup Preview
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove Preview Folder
+        shell: bash
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+
+          PREVIEW_DIR="previews/pr-${{ github.event.pull_request.number }}"
+          rm -rf "$PREVIEW_DIR"
+
+          if git diff --quiet --exit-code; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove preview for PR #${{ github.event.pull_request.number }}"
+          git push origin gh-pages
