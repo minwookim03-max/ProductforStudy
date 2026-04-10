@@ -86,20 +86,29 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 14px;
   width: min(1180px, 100%);
-  margin: 0 auto 24px;
-  padding: 18px 22px;
+  margin: 0 auto 16px;
+  padding: 8px 16px;
   border: 1px solid var(--line);
-  border-radius: 28px;
+  border-radius: 22px;
   background: rgba(255, 253, 250, 0.72);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow);
 }
 
 .brand-block {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.brand-logo {
+  display: block;
+  width: auto;
+  height: 32px;
+  max-width: min(220px, 22vw);
+  object-fit: contain;
 }
 
 .brand-kicker,
@@ -120,7 +129,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .header-actions {
@@ -145,7 +154,7 @@ button {
 .nav-link,
 .filter-chip,
 .button-secondary {
-  padding: 10px 16px;
+  padding: 8px 14px;
   background: rgba(255, 247, 239, 0.88);
   color: var(--ink);
 }
@@ -218,6 +227,16 @@ button {
 .hero-copy h1 {
   font-size: clamp(2.5rem, 4.5vw, 5rem);
   max-width: 11ch;
+}
+
+.hero-home-title {
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(0.95rem, 1.35vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.32;
+  letter-spacing: -0.005em;
+  max-width: 28ch;
+  text-wrap: pretty;
 }
 
 .hero-text,
@@ -818,11 +837,21 @@ button {
   .site-header {
     flex-direction: column;
     align-items: stretch;
-    padding: 18px;
+    padding: 8px 12px;
+  }
+
+  .brand-block {
+    min-height: 28px;
+  }
+
+  .brand-logo {
+    height: 28px;
+    max-width: min(190px, 64vw);
   }
 
   .top-nav {
     justify-content: flex-start;
+    gap: 6px;
   }
 
   .header-actions {
@@ -854,6 +883,13 @@ button {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .hero-home-title {
+    font-size: clamp(0.92rem, 3.7vw, 1.08rem);
+    line-height: 1.34;
+    letter-spacing: 0;
+    max-width: none;
   }
 
   .category-grid,
