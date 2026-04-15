@@ -331,6 +331,29 @@ const checkoutDeliverySlots = [
   "Sat, Apr 18 · Cochrane route",
 ];
 
+const orderStatusStageMeta = [
+  {
+    key: "confirmed",
+    label: "Order confirmed",
+    helper: "Payment approved and order sheet created.",
+  },
+  {
+    key: "packed",
+    label: "Packed by seller",
+    helper: "Fresh and frozen items are being staged by temperature.",
+  },
+  {
+    key: "dispatched",
+    label: "Out for delivery",
+    helper: "Driver has your order on the local route.",
+  },
+  {
+    key: "delivered",
+    label: "Delivered",
+    helper: "Order delivered to the selected address.",
+  },
+];
+
 const canadianProvinces = [
   "Alberta",
   "British Columbia",
@@ -422,6 +445,31 @@ let authState = {
   email: "",
   name: "",
   points: 0,
+  address: "",
+  addressLine2: "",
+  postalCode: "",
+  marketingConsent: false,
+  requiredConsent: false,
+  passwordResetNotice: "",
+};
+let latestOrderState = null;
+let accountProfileState = {
+  isEditing: false,
+  notice: "",
+  errors: {},
+  draft: {
+    name: "",
+    email: "",
+    address: "",
+    addressQuery: "",
+    selectedAddress: "",
+    addressLine2: "",
+    postalCode: "",
+    marketingConsent: false,
+    addressOptions: [],
+    addressLoading: false,
+    addressApiError: "",
+  },
 };
 let isAccountMenuOpen = false;
 let registerFormState = {
@@ -1031,6 +1079,23 @@ function checkoutRoute() {
   return "#checkout";
 }
 
+function orderStatusRoute(orderId = "") {
+  return orderId ? `#order-${orderId}` : "#order-status";
+}
+
+function accountRoute(tab = "orders") {
+  if (!tab || tab === "orders") return "#account";
+  return `#account-${tab}`;
+}
+
+function navigateToRoute(route) {
+  if (window.location.hash === route) {
+    renderApp();
+    return;
+  }
+  window.location.hash = route;
+}
+
 function getCurrentRoute() {
   const hash = window.location.hash || "";
   if (hash === "#login") {
@@ -1044,6 +1109,20 @@ function getCurrentRoute() {
   }
   if (hash === "#checkout") {
     return { page: "checkout" };
+  }
+  if (hash === "#account") {
+    return { page: "account", tab: "orders" };
+  }
+  const accountMatch = hash.match(/^#account-(orders|points|profile)$/);
+  if (accountMatch) {
+    return { page: "account", tab: accountMatch[1] };
+  }
+  if (hash === "#order-status") {
+    return { page: "order-status" };
+  }
+  const orderMatch = hash.match(/^#order-(.+)$/);
+  if (orderMatch) {
+    return { page: "order-status", id: orderMatch[1] };
   }
   const match = hash.match(/^#product-(\d+)$/);
   if (match) {
@@ -1098,6 +1177,143 @@ function cartTotal() {
   return cartSubtotal() + cartDeliveryFee();
 }
 
+function formatOrderTimestamp(date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "UTC",
+  }).format(date).replace(",", " ·");
+}
+
+function composeAddressLine(address, addressLine2, city, province, postalCode, country = "Canada") {
+  return [
+    address,
+    addressLine2,
+    [city, province].filter(Boolean).join(", "),
+    postalCode,
+    country,
+  ].filter(Boolean).join(" · ");
+}
+
+function buildOrderTimeline(currentStage, deliveryDate) {
+  const activeIndex = Math.max(0, orderStatusStageMeta.findIndex((stage) => stage.key === currentStage));
+  return orderStatusStageMeta.map((stage, index) => {
+    if (index < activeIndex) {
+      return {
+        ...stage,
+        state: "complete",
+        detail: index === 1 ? "Seller finished item packing and cold-chain prep." : stage.helper,
+      };
+    }
+    if (index === activeIndex) {
+      return {
+        ...stage,
+        state: "current",
+        detail: stage.key === "packed"
+          ? "Seller is packing your order now. Dispatch is scheduled for " + deliveryDate + "."
+          : stage.helper,
+      };
+    }
+    return {
+      ...stage,
+      state: "upcoming",
+      detail: stage.key === "dispatched"
+        ? "Route handoff starts on " + deliveryDate + "."
+        : stage.helper,
+    };
+  });
+}
+
+function createOrderStatusRecord() {
+  const first = productById(1);
+  const third = productById(3);
+  return {
+    id: "SB-260414-1842",
+    placedAt: "Apr 14 2026 · 6:42 PM",
+    headline: "Preparing for dispatch",
+    summary: "Seller is packing your order and checking cold-chain items before route handoff.",
+    currentStage: "packed",
+    paymentStatus: "Paid",
+    fulfillmentStatus: "Packing in progress",
+    paymentMethod: "Visa ending in 3456",
+    deliveryDate: checkoutDeliverySlots[0],
+    customerName: "Guest shopper",
+    phone: "+1 403 555 0123",
+    shippingAddress: "123 4 Ave SW · Calgary, Alberta · T2P 1J9 · Canada",
+    billingAddress: "123 4 Ave SW · Calgary, Alberta · T2P 1J9 · Canada",
+    supportNote: "Need help before dispatch? Customer care replies within one business day.",
+    items: [
+      { ...first, quantity: 1, lineTotal: first.price },
+      { ...third, quantity: 2, lineTotal: third.price * 2 },
+    ],
+    subtotal: 63,
+    deliveryFee: 9,
+    pointsDiscount: 0,
+    total: 72,
+    earnedPoints: 72,
+    timeline: buildOrderTimeline("packed", checkoutDeliverySlots[0]),
+  };
+}
+
+function buildOrderFromCheckout() {
+  const orderDate = new Date();
+  const orderId = "SB-" + [
+    orderDate.getUTCFullYear().toString().slice(-2),
+    String(orderDate.getUTCMonth() + 1).padStart(2, "0"),
+    String(orderDate.getUTCDate()).padStart(2, "0"),
+  ].join("") + "-" + String(orderDate.getUTCHours()).padStart(2, "0") + String(orderDate.getUTCMinutes()).padStart(2, "0");
+  const items = cartSummaryItems().map((entry) => ({ ...entry.product, quantity: entry.quantity, lineTotal: entry.lineTotal }));
+  const subtotal = cartSubtotal();
+  const deliveryFee = cartDeliveryFee();
+  const pointsDiscount = checkoutPointsDiscount();
+  const total = checkoutGrandTotal();
+  const earnedPoints = checkoutEstimatedEarnPoints();
+  const shippingAddress = composeAddressLine(
+    checkoutFormState.selectedAddress || checkoutFormState.addressQuery,
+    checkoutFormState.addressLine2,
+    checkoutFormState.shippingCity,
+    checkoutFormState.shippingProvince,
+    checkoutFormState.postalCode,
+    "Canada"
+  );
+  const billingAddress = composeAddressLine(
+    checkoutFormState.billingSelectedAddress || checkoutFormState.billingAddressQuery,
+    checkoutFormState.billingAddressLine2,
+    checkoutFormState.billingCity,
+    checkoutFormState.billingProvince,
+    checkoutFormState.billingPostalCode,
+    checkoutFormState.billingCountry
+  );
+
+  return {
+    id: orderId,
+    placedAt: formatOrderTimestamp(orderDate),
+    headline: "Preparing for dispatch",
+    summary: "Payment was approved and your order is now being packed for the selected delivery route.",
+    currentStage: "packed",
+    paymentStatus: "Paid",
+    fulfillmentStatus: "Packing in progress",
+    paymentMethod: "Card ending in " + checkoutFormState.cardNumber.replace(/\D+/g, "").slice(-4),
+    deliveryDate: checkoutFormState.deliveryDate,
+    customerName: checkoutFormState.name,
+    phone: checkoutFormState.phone,
+    shippingAddress,
+    billingAddress,
+    supportNote: "Route updates will appear here until the order is delivered.",
+    items,
+    subtotal,
+    deliveryFee,
+    pointsDiscount,
+    total,
+    earnedPoints,
+    timeline: buildOrderTimeline("packed", checkoutFormState.deliveryDate),
+  };
+}
+
 function setCartQuantity(productId, quantity) {
   const nextQty = Math.max(0, quantity);
   cartState = cartState
@@ -1145,6 +1361,7 @@ function accountUtilityMarkup() {
         <div class="account-dropdown">
           <button class="account-dropdown-link" type="button" data-account-action="orders">My Orders</button>
           <button class="account-dropdown-link" type="button" data-account-action="points">My Points</button>
+          <button class="account-dropdown-link" type="button" data-account-action="profile">Profile</button>
           <button class="account-dropdown-link is-logout" type="button" data-account-action="logout">Logout</button>
         </div>
       ` : ''}
@@ -2238,6 +2455,540 @@ function checkoutMarkup() {
   `;
 }
 
+function accountOrderHistory() {
+  const recent = latestOrderState || createOrderStatusRecord();
+  const archived = {
+    ...createOrderStatusRecord(),
+    id: "SB-260410-1031",
+    placedAt: "Apr 10 2026 · 10:31 AM",
+    headline: "Delivered",
+    summary: "This order was delivered successfully to the saved Calgary address.",
+    currentStage: "delivered",
+    fulfillmentStatus: "Delivered",
+    deliveryDate: "Fri, Apr 10 · Calgary route",
+    customerName: authState.name || "Guest shopper",
+    phone: "+1 403 555 0148",
+    shippingAddress: recent.shippingAddress,
+    items: [
+      { ...productById(8), quantity: 1, lineTotal: productById(8).price },
+      { ...productById(7), quantity: 2, lineTotal: productById(7).price * 2 },
+    ],
+    subtotal: 40,
+    deliveryFee: 9,
+    pointsDiscount: 0,
+    total: 49,
+    earnedPoints: 49,
+    supportNote: "Delivered orders remain available here for repeat purchase reference.",
+    timeline: buildOrderTimeline("delivered", "Fri, Apr 10 · Calgary route"),
+  };
+
+  return recent.id === archived.id ? [recent] : [recent, archived];
+}
+
+function orderById(orderId = "") {
+  const orders = accountOrderHistory();
+  return orders.find((order) => order.id === orderId) || orders[0];
+}
+
+function profileAddressText() {
+  return authState.address || latestOrderState?.shippingAddress || registerFormState.selectedAddress || "No saved address yet.";
+}
+
+function profileAddressLine2Text() {
+  return authState.addressLine2 || registerFormState.addressLine2 || "Not provided";
+}
+
+function profilePostalCodeText() {
+  return authState.postalCode || registerFormState.postalCode || "Not provided";
+}
+
+function createAccountProfileDraft() {
+  const savedAddress = authState.address || "";
+  return {
+    name: authState.name || "",
+    email: authState.email || "",
+    address: savedAddress,
+    addressQuery: savedAddress,
+    selectedAddress: savedAddress,
+    addressLine2: authState.addressLine2 || "",
+    postalCode: authState.postalCode || "",
+    marketingConsent: Boolean(authState.marketingConsent),
+    addressOptions: [],
+    addressLoading: false,
+    addressApiError: "",
+  };
+}
+
+function validateAccountProfileDraft(draft) {
+  const errors = {};
+  if (!draft.name.trim()) {
+    errors.name = 'Name is required.';
+  }
+  if (!draft.email.trim()) {
+    errors.email = 'Email is required.';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim())) {
+    errors.email = 'Enter a valid email address.';
+  }
+  if (!draft.addressQuery.trim()) {
+    errors.addressQuery = 'Please search for your address.';
+  }
+  if (!draft.selectedAddress) {
+    errors.selectedAddress = 'Select an address from the suggestions.';
+  }
+  if (!draft.postalCode.trim()) {
+    errors.postalCode = 'Postal code is required.';
+  }
+  return errors;
+}
+
+async function fetchAccountProfileAddressSuggestions(query) {
+  const trimmed = query.trim();
+  accountProfileState.draft.addressQuery = query;
+  accountProfileState.draft.address = query;
+  accountProfileState.draft.selectedAddress = '';
+  accountProfileState.draft.addressApiError = '';
+
+  if (registerLookupDebounceId) {
+    window.clearTimeout(registerLookupDebounceId);
+  }
+
+  if (trimmed.length < 3) {
+    accountProfileState.draft.addressOptions = [];
+    accountProfileState.draft.addressLoading = false;
+    rerenderAccountProfileView({ preserveFieldName: 'addressQuery', caretPosition: query.length });
+    return;
+  }
+
+  accountProfileState.draft.addressLoading = true;
+  const requestId = ++registerLookupRequestId;
+  registerLookupDebounceId = window.setTimeout(async () => {
+    try {
+      await ensureRegisterPlacesServices();
+      const predictions = await new Promise((resolve, reject) => {
+        registerAutocompleteService.getPlacePredictions(
+          {
+            input: trimmed,
+            componentRestrictions: { country: 'ca' },
+            sessionToken: registerPlacesSessionToken,
+          },
+          (results, status) => {
+            const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
+            const zeroStatus = window.google?.maps?.places?.PlacesServiceStatus?.ZERO_RESULTS;
+            if (status === okStatus) {
+              resolve(results || []);
+              return;
+            }
+            if (status === zeroStatus) {
+              resolve([]);
+              return;
+            }
+            reject(new Error('Google Places could not return address suggestions right now.'));
+          }
+        );
+      });
+
+      if (requestId != registerLookupRequestId) {
+        return;
+      }
+
+      const normalizedQuery = normalizeAddressSearch(trimmed);
+      accountProfileState.draft.addressOptions = predictions
+        .map((prediction) => ({
+          placeId: prediction.place_id,
+          mainText: prediction.structured_formatting?.main_text || prediction.description,
+          secondaryText: prediction.structured_formatting?.secondary_text || prediction.description,
+          description: prediction.description || '',
+        }))
+        .filter((prediction) => {
+          const mainText = normalizeAddressSearch(prediction.mainText);
+          const description = normalizeAddressSearch(prediction.description);
+          return mainText.startsWith(normalizedQuery) || description.startsWith(normalizedQuery);
+        });
+      accountProfileState.draft.addressLoading = false;
+      accountProfileState.draft.addressApiError = '';
+    } catch (error) {
+      if (requestId != registerLookupRequestId) {
+        return;
+      }
+      accountProfileState.draft.addressLoading = false;
+      accountProfileState.draft.addressOptions = [];
+      accountProfileState.draft.addressApiError = error?.message || 'Google Places could not return address suggestions right now.';
+    }
+
+    rerenderAccountProfileView({ preserveFieldName: 'addressQuery', caretPosition: query.length });
+  }, 250);
+}
+
+async function selectAccountProfileAddress(placeId) {
+  try {
+    await ensureRegisterPlacesServices();
+    const place = await new Promise((resolve, reject) => {
+      registerPlacesService.getDetails(
+        {
+          placeId,
+          fields: ['formatted_address', 'address_components'],
+          sessionToken: registerPlacesSessionToken,
+        },
+        (result, status) => {
+          const okStatus = window.google?.maps?.places?.PlacesServiceStatus?.OK;
+          if (status !== okStatus || !result) {
+            reject(new Error('Google Places could not load the selected address.'));
+            return;
+          }
+          resolve(result);
+        }
+      );
+    });
+
+    const details = extractAddressDetails(place);
+    accountProfileState.draft.selectedAddress = details.formattedAddress;
+    accountProfileState.draft.addressQuery = details.formattedAddress;
+    accountProfileState.draft.address = details.formattedAddress;
+    accountProfileState.draft.postalCode = details.postalCode || accountProfileState.draft.postalCode;
+    accountProfileState.draft.addressOptions = [];
+    accountProfileState.draft.addressApiError = '';
+    accountProfileState.errors = {
+      ...accountProfileState.errors,
+      addressQuery: '',
+      selectedAddress: '',
+      postalCode: '',
+    };
+    registerPlacesSessionToken = new window.google.maps.places.AutocompleteSessionToken();
+  } catch (error) {
+    accountProfileState.draft.addressApiError = error?.message || 'Google Places could not load the selected address.';
+  }
+
+  accountProfileState.draft.addressLoading = false;
+  rerenderAccountProfileView({ preserveFieldName: 'addressQuery' });
+}
+
+function accountPointsHistory() {
+  return accountOrderHistory().map((order) => ({
+    date: order.placedAt,
+    orderId: order.id,
+    paymentAmount: order.total,
+    earnedPoints: order.earnedPoints,
+    redeemedPoints: Math.max(0, Math.round((order.pointsDiscount || 0) * 500)),
+  }));
+}
+
+function accountOrdersSectionMarkup() {
+  const orders = accountOrderHistory();
+  return `
+    <section class="account-panel">
+      <div class="section-header-copy">
+        <p class="section-kicker">Orders</p>
+        <h1 class="section-title">Recent orders</h1>
+      </div>
+      <div class="account-order-list">
+        ${orders.map((order) => `
+          <article class="account-order-card">
+            <div class="account-order-main">
+              <div class="account-order-row"><span>Order number</span><strong>${order.id}</strong></div>
+              <div class="account-order-row"><span>Date</span><strong>${order.placedAt}</strong></div>
+              <div class="account-order-row"><span>Status</span><strong>${order.fulfillmentStatus}</strong></div>
+              <div class="account-order-row"><span>Total</span><strong>${money(order.total)}</strong></div>
+            </div>
+            <button class="button-secondary account-order-action" type="button" data-account-view-order="${order.id}">View details</button>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function accountPointsSectionMarkup() {
+  const available = authState.points || 0;
+  const redeemable = availableRedeemPoints();
+  const nextReward = available >= 2500 ? "Redeem available now" : `${(2500 - available).toLocaleString()}P until next redeem`;
+  const history = accountPointsHistory();
+  return `
+    <section class="account-panel">
+      <div class="section-header-copy">
+        <p class="section-kicker">Points</p>
+        <h1 class="section-title">My Points</h1>
+      </div>
+      <div class="account-points-grid">
+        <article class="account-stat-card">
+          <span>Available points</span>
+          <strong>${available.toLocaleString()}P</strong>
+        </article>
+        <article class="account-stat-card">
+          <span>Redeemable now</span>
+          <strong>${redeemable.toLocaleString()}P</strong>
+        </article>
+        <article class="account-stat-card">
+          <span>Next reward</span>
+          <strong>${nextReward}</strong>
+        </article>
+      </div>
+      <div class="account-history-card">
+        <div class="section-header-copy">
+          <p class="section-kicker">History</p>
+          <h2 class="section-title">Points activity</h2>
+        </div>
+        <div class="account-points-history-list">
+          ${history.map((entry) => `
+            <article class="account-points-history-row">
+              <div><span>Date</span><strong>${entry.date}</strong></div>
+              <div><span>Order</span><strong>${entry.orderId}</strong></div>
+              <div><span>Payment</span><strong>${money(entry.paymentAmount)}</strong></div>
+              <div><span>Earned</span><strong>+${entry.earnedPoints.toLocaleString()}P</strong></div>
+              <div><span>Redeemed</span><strong>${entry.redeemedPoints ? ('-' + entry.redeemedPoints.toLocaleString() + 'P') : '0P'}</strong></div>
+            </article>
+          `).join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function accountProfileSectionMarkup() {
+  const draft = accountProfileState.isEditing ? accountProfileState.draft : createAccountProfileDraft();
+  const errors = accountProfileState.errors || {};
+  const suggestions = draft.addressOptions || [];
+  return `
+    <section class="account-panel">
+      <div class="section-header-copy">
+        <p class="section-kicker">Profile</p>
+        <h1 class="section-title">My Profile</h1>
+      </div>
+      ${accountProfileState.notice ? `<p class="auth-banner">${accountProfileState.notice}</p>` : ''}
+      <form class="account-profile-card account-profile-form" data-account-profile-form="true">
+        <label class="account-profile-row${errors.name ? ' is-invalid' : ''}">
+          <span>Name <em class="account-required">*</em></span>
+          <input name="name" type="text" value="${draft.name}" ${accountProfileState.isEditing ? '' : 'disabled'} />
+          ${errors.name ? `<small class="field-error">${errors.name}</small>` : ''}
+        </label>
+        <label class="account-profile-row${errors.email ? ' is-invalid' : ''}">
+          <span>Email <em class="account-required">*</em></span>
+          <input name="email" type="email" value="${draft.email}" ${accountProfileState.isEditing ? '' : 'disabled'} />
+          ${errors.email ? `<small class="field-error">${errors.email}</small>` : ''}
+        </label>
+        <label class="account-profile-row form-field-address${errors.addressQuery || errors.selectedAddress || draft.addressApiError ? ' is-invalid' : ''}">
+          <span>Address <em class="account-required">*</em></span>
+          <div class="address-input-shell">
+            <input name="addressQuery" type="text" autocomplete="address-line1" placeholder="Enter street number or address" value="${draft.addressQuery}" ${accountProfileState.isEditing ? '' : 'disabled'} />
+            <span class="address-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="6"></circle>
+                <path d="m20 20-3.2-3.2"></path>
+              </svg>
+            </span>
+          </div>
+          <div id="places-service-anchor" class="places-attribution-anchor" aria-hidden="true"></div>
+          ${errors.addressQuery ? `<small class="field-error">${errors.addressQuery}</small>` : ''}
+          ${draft.addressLoading ? `<small class="field-hint">Searching addresses...</small>` : ''}
+          ${accountProfileState.isEditing && suggestions.length ? `
+            <div class="address-results">
+              ${suggestions.map((item) => `<button class="address-option" type="button" data-account-address-option="${item.placeId}"><strong>${item.mainText}</strong><span>${item.secondaryText}</span></button>`).join('')}
+            </div>
+          ` : accountProfileState.isEditing && draft.addressQuery.trim().length > 0 && !draft.selectedAddress && !draft.addressLoading && !draft.addressApiError ? `<small class="field-hint">No matching address results yet. Try adding more street number or nearby address context.</small>` : ''}
+          ${accountProfileState.isEditing && draft.selectedAddress ? `
+            <div class="selected-address-card">
+              <span class="selected-address-label">Selected Address</span>
+              <strong>${draft.selectedAddress}</strong>
+            </div>
+          ` : ''}
+          ${errors.selectedAddress ? `<small class="field-error">${errors.selectedAddress}</small>` : ''}
+          ${draft.addressApiError ? `<small class="field-error">${draft.addressApiError}</small>` : ''}
+        </label>
+        <label class="account-profile-row">
+          <span>Address 2</span>
+          <input name="addressLine2" type="text" value="${draft.addressLine2}" ${accountProfileState.isEditing ? '' : 'disabled'} />
+        </label>
+        <label class="account-profile-row${errors.postalCode ? ' is-invalid' : ''}">
+          <span>Postal code <em class="account-required">*</em></span>
+          <input name="postalCode" type="text" value="${draft.postalCode}" ${accountProfileState.isEditing ? '' : 'disabled'} />
+          ${errors.postalCode ? `<small class="field-error">${errors.postalCode}</small>` : ''}
+        </label>
+        <label class="account-profile-row account-profile-checkbox">
+          <span class="account-profile-checkbox-copy">
+            <span class="account-profile-checkbox-heading">
+              <span>Marketing consent</span>
+              <input name="marketingConsent" type="checkbox" ${draft.marketingConsent ? 'checked' : ''} ${accountProfileState.isEditing ? '' : 'disabled'} />
+            </span>
+            <span class="account-profile-checkbox-description">
+              <span class="consent-label consent-label-optional">Optional</span>
+              <span class="account-profile-checkbox-text">I agree to receive marketing emails from Seoul Basket, including promotions, product updates, and special offers. I understand that I can unsubscribe at any time.</span>
+            </span>
+          </span>
+        </label>
+        <div class="account-profile-actions">
+          ${accountProfileState.isEditing ? '<button class="button-secondary" type="button" data-account-profile-cancel="true">Cancel</button><button class="button-primary" type="submit">Save</button>' : '<button class="button-secondary" type="button" data-account-profile-edit="true">Edit</button>'}
+        </div>
+      </form>
+      <div class="account-password-card">
+        <div class="section-header-copy">
+          <p class="section-kicker">Security</p>
+          <h2 class="section-title">Password reset by email</h2>
+        </div>
+        <p class="account-password-copy">Send a verification email to ${authState.email || 'your saved email'} to start a secure password reset flow.</p>
+        ${authState.passwordResetNotice ? `<p class="auth-banner">${authState.passwordResetNotice}</p>` : ''}
+        <button class="button-secondary" type="button" data-account-send-reset="true">Send verification email</button>
+      </div>
+    </section>
+  `;
+}
+
+function accountMainMarkup(tab) {
+  if (tab === "points") return accountPointsSectionMarkup();
+  if (tab === "profile") return accountProfileSectionMarkup();
+  return accountOrdersSectionMarkup();
+}
+
+function accountDashboardMarkup(tab = "orders") {
+  return `
+    <div class="page-shell">
+      <div class="market-shell" id="top">
+        ${loginTopChrome()}
+        <main class="content-shell content-shell-login">
+          <section class="checkout-centered-shell">
+            <div class="checkout-card-shell account-dashboard-card-shell">
+              <section class="detail-breadcrumbs">
+                <button class="detail-back-link" type="button" data-home-link="true">Home</button>
+                <span>/</span>
+                <span>My Account</span>
+              </section>
+              <section class="account-dashboard-shell">
+                <aside class="account-sidebar">
+                  <button class="account-sidebar-link${tab === "orders" ? " is-active" : ""}" type="button" data-account-nav="orders">My Orders</button>
+                  <button class="account-sidebar-link${tab === "points" ? " is-active" : ""}" type="button" data-account-nav="points">My Points</button>
+                  <button class="account-sidebar-link${tab === "profile" ? " is-active" : ""}" type="button" data-account-nav="profile">Profile</button>
+                  <button class="account-sidebar-link is-logout" type="button" data-account-dashboard-logout="true">Logout</button>
+                </aside>
+                <div class="account-dashboard-main">
+                  ${accountMainMarkup(tab)}
+                </div>
+              </section>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  `;
+}
+
+function orderStatusMarkup(orderId = "") {
+  const order = orderById(orderId);
+  const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  return `
+    <div class="page-shell">
+      <div class="market-shell" id="top">
+        ${loginTopChrome()}
+        <main class="content-shell content-shell-login">
+          <section class="checkout-centered-shell">
+            <div class="checkout-card-shell">
+              <div class="order-status-stack">
+                <section class="detail-breadcrumbs">
+                  <button class="detail-back-link" type="button" data-home-link="true">Home</button>
+                  <span>/</span>
+                  <span>Order Status</span>
+                </section>
+
+                <section class="order-status-hero">
+                  <div class="order-status-hero-copy">
+                    <p class="section-kicker">Order status</p>
+                    <h1 class="section-title">${order.headline}</h1>
+                    <p class="order-status-summary">${order.summary}</p>
+                    <div class="order-status-pill-row">
+                      <span class="order-status-pill is-strong">${order.id}</span>
+                      <span class="order-status-pill">${order.paymentStatus}</span>
+                      <span class="order-status-pill">${order.fulfillmentStatus}</span>
+                    </div>
+                  </div>
+                  <div class="order-status-meta-card">
+                    <div class="order-meta-row"><span>Placed</span><strong>${order.placedAt}</strong></div>
+                    <div class="order-meta-row"><span>Delivery slot</span><strong>${order.deliveryDate}</strong></div>
+                  </div>
+                </section>
+
+                <section class="order-status-section">
+                  <div class="section-header-row">
+                    <div class="section-header-copy">
+                      <p class="section-kicker">Progress</p>
+                      <h2 class="section-title">Delivery timeline</h2>
+                    </div>
+                  </div>
+                  <div class="order-timeline">
+                    ${order.timeline.map((stage) => `
+                      <article class="order-timeline-card is-${stage.state}">
+                        <div class="order-timeline-marker">${stage.state === "complete" ? "✓" : stage.state === "current" ? "•" : "○"}</div>
+                        <div class="order-timeline-copy">
+                          <strong>${stage.label}</strong>
+                          <p>${stage.detail}</p>
+                        </div>
+                        <span class="order-timeline-state">${stage.state === "complete" ? "Done" : stage.state === "current" ? "Now" : "Next"}</span>
+                      </article>
+                    `).join("")}
+                  </div>
+                </section>
+
+                <section class="order-status-grid">
+                  <div class="order-status-main">
+                    <article class="order-status-section">
+                      <div class="section-header-row">
+                        <div class="section-header-copy">
+                          <p class="section-kicker">Items</p>
+                          <h2 class="section-title">${itemCount} item${itemCount === 1 ? "" : "s"} in this order</h2>
+                        </div>
+                      </div>
+                      <div class="order-item-list">
+                        ${order.items.map((item) => `
+                          <article class="order-item-card">
+                            <button class="order-item-media" type="button" data-order-product-link="${item.id}">
+                              <strong>${item.image}</strong>
+                            </button>
+                            <div class="order-item-copy">
+                              <p class="cart-item-seller">${item.seller}</p>
+                              <h3><button class="order-item-name-link" type="button" data-order-product-link="${item.id}">${item.name}</button></h3>
+                            </div>
+                            <div class="order-item-price">
+                              <span>Qty ${item.quantity}</span>
+                              <strong>${money(item.lineTotal)}</strong>
+                            </div>
+                          </article>
+                        `).join("")}
+                      </div>
+                    </article>
+                  </div>
+
+                  <aside class="order-status-side">
+                    <article class="order-status-card">
+                      <p class="section-kicker">Recipient</p>
+                      <strong>${order.customerName}</strong>
+                      <p>${order.phone}</p>
+                    </article>
+                    <article class="order-status-card">
+                      <p class="section-kicker">Shipping address</p>
+                      <strong>${order.shippingAddress}</strong>
+                    </article>
+                    <article class="order-status-card">
+                      <p class="section-kicker">Order summary</p>
+                      <div class="cart-summary-rows checkout-summary-rows">
+                        <div class="cart-summary-row"><span>Subtotal</span><strong>${money(order.subtotal)}</strong></div>
+                        <div class="cart-summary-row"><span>Delivery fee</span><strong>${order.deliveryFee ? money(order.deliveryFee) : "Free"}</strong></div>
+                        <div class="cart-summary-row"><span>Discount / points</span><strong>${order.pointsDiscount ? `-${money(order.pointsDiscount)}` : money(0)}</strong></div>
+                        <div class="cart-summary-row cart-summary-total"><span>Total</span><strong>${money(order.total)}</strong></div>
+                      </div>
+                      <p class="order-status-support">${order.supportNote}</p>
+                      <div class="order-status-action-row">
+                        <button class="button-secondary" type="button" data-home-link="true">Continue Shopping</button>
+                        <button class="button-primary" type="button" data-cart-link="true">View Cart</button>
+                      </div>
+                    </article>
+                  </aside>
+                </section>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  `;
+}
+
 function productDetailMarkup(product) {
   const profile = productProfile(product);
   const galleries = galleryItems(product);
@@ -2436,6 +3187,18 @@ function renderCheckout() {
   root.innerHTML = checkoutMarkup();
 }
 
+function renderOrderStatus(orderId = "") {
+  const root = document.getElementById("root");
+  if (!root) return;
+  root.innerHTML = orderStatusMarkup(orderId);
+}
+
+function renderAccountDashboard(tab = "orders") {
+  const root = document.getElementById("root");
+  if (!root) return;
+  root.innerHTML = accountDashboardMarkup(tab);
+}
+
 function rerenderCheckoutView(options = {}) {
   renderCheckout();
   attachSharedControls();
@@ -2459,6 +3222,22 @@ function rerenderRegisterView(options = {}) {
 
   if (options.preserveAddressFocus) {
     const input = document.querySelector('[data-register-form="true"] input[name="addressQuery"]');
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+      const caret = Math.min(options.caretPosition ?? input.value.length, input.value.length);
+      input.setSelectionRange(caret, caret);
+    }
+  }
+}
+
+function rerenderAccountProfileView(options = {}) {
+  renderAccountDashboard('profile');
+  attachSharedControls();
+  attachAccountDashboardControls();
+
+  const fieldName = options.preserveFieldName || '';
+  if (fieldName) {
+    const input = document.querySelector('[data-account-profile-form="true"] input[name="' + fieldName + '"]');
     if (input instanceof HTMLInputElement) {
       input.focus();
       const caret = Math.min(options.caretPosition ?? input.value.length, input.value.length);
@@ -2581,18 +3360,43 @@ function attachSharedControls() {
   });
 
   document.querySelectorAll("[data-account-action]").forEach((button) => {
-    button.onclick = () => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       const action = button.getAttribute('data-account-action');
       isAccountMenuOpen = false;
       if (action === 'logout') {
-        authState = { isLoggedIn: false, email: '', name: '', points: 0 };
+        authState = { isLoggedIn: false, email: '', name: '', points: 0, address: '', addressLine2: '', postalCode: '', marketingConsent: false, requiredConsent: false, passwordResetNotice: '' };
         currentDetailProductId = null;
         clearSlider();
-        window.location.hash = '#top';
-        renderApp();
+        navigateToRoute('#top');
+        return;
+      }
+      if (action === 'orders') {
+        clearSlider();
+        navigateToRoute(accountRoute('orders'));
+        return;
+      }
+      if (action === 'points') {
+        clearSlider();
+        navigateToRoute(accountRoute('points'));
+        return;
+      }
+      if (action === 'profile') {
+        clearSlider();
+        navigateToRoute(accountRoute('profile'));
         return;
       }
       renderApp();
+    };
+  });
+
+  document.querySelectorAll('[data-order-product-link]').forEach((button) => {
+    button.onclick = () => {
+      const id = Number(button.getAttribute('data-order-product-link'));
+      if (!id) return;
+      clearSlider();
+      window.location.hash = productRoute(id);
     };
   });
 
@@ -2704,8 +3508,14 @@ function attachLoginControls() {
       authState = {
         isLoggedIn: true,
         email: loginFormState.email,
-        name: accountDisplayName(loginFormState.email),
+        name: registerFormState.name || accountDisplayName(loginFormState.email),
         points: 2800,
+        address: registerFormState.selectedAddress || registerFormState.addressQuery || "",
+        addressLine2: registerFormState.addressLine2 || "",
+        postalCode: registerFormState.postalCode || "",
+        marketingConsent: Boolean(registerFormState.marketingConsent),
+        requiredConsent: Boolean(registerFormState.requiredConsent),
+        passwordResetNotice: "",
       };
       isAccountMenuOpen = false;
       clearSlider();
@@ -2855,6 +3665,148 @@ function attachCartControls() {
   });
 }
 
+function attachAccountDashboardControls() {
+  document.querySelectorAll('[data-account-nav]').forEach((button) => {
+    button.onclick = () => {
+      const tab = button.getAttribute('data-account-nav') || 'orders';
+      clearSlider();
+      navigateToRoute(accountRoute(tab));
+    };
+  });
+
+  document.querySelectorAll('[data-account-view-order]').forEach((button) => {
+    button.onclick = () => {
+      const orderId = button.getAttribute('data-account-view-order') || '';
+      clearSlider();
+      navigateToRoute(orderStatusRoute(orderId));
+    };
+  });
+
+  document.querySelectorAll('[data-account-dashboard-logout="true"]').forEach((button) => {
+    button.onclick = () => {
+      authState = { isLoggedIn: false, email: '', name: '', points: 0, address: '', addressLine2: '', postalCode: '', marketingConsent: false, requiredConsent: false, passwordResetNotice: '' };
+      currentDetailProductId = null;
+      isAccountMenuOpen = false;
+      clearSlider();
+      navigateToRoute('#top');
+    };
+  });
+
+  document.querySelectorAll('[data-account-send-reset="true"]').forEach((button) => {
+    button.onclick = () => {
+      authState.passwordResetNotice = authState.email
+        ? `Verification email queued for ${authState.email}. Connect a real auth provider to send the live reset link.`
+        : 'Save a valid email address first to send a password reset email.';
+      renderAccountDashboard('profile');
+      attachSharedControls();
+      attachAccountDashboardControls();
+    };
+  });
+
+  document.querySelectorAll('[data-account-profile-edit="true"]').forEach((button) => {
+    button.onclick = () => {
+      accountProfileState.isEditing = true;
+      accountProfileState.notice = '';
+      accountProfileState.errors = {};
+      accountProfileState.draft = createAccountProfileDraft();
+      renderAccountDashboard('profile');
+      attachSharedControls();
+      attachAccountDashboardControls();
+    };
+  });
+
+  document.querySelectorAll('[data-account-profile-cancel="true"]').forEach((button) => {
+    button.onclick = () => {
+      accountProfileState.isEditing = false;
+      accountProfileState.notice = '';
+      accountProfileState.errors = {};
+      accountProfileState.draft = createAccountProfileDraft();
+      renderAccountDashboard('profile');
+      attachSharedControls();
+      attachAccountDashboardControls();
+    };
+  });
+
+  const profileForm = document.querySelector('[data-account-profile-form="true"]');
+  if (profileForm) {
+    profileForm.querySelectorAll('input').forEach((input) => {
+      input.addEventListener('input', () => {
+        if (input.type === 'checkbox') {
+          accountProfileState.draft[input.name] = input.checked;
+        } else {
+          accountProfileState.draft[input.name] = input.value;
+        }
+        if (input.name === 'postalCode') {
+          accountProfileState.draft.postalCode = accountProfileState.draft.postalCode.toUpperCase();
+          input.value = accountProfileState.draft.postalCode;
+        }
+        if (input.name === 'addressQuery') {
+          accountProfileState.draft.address = input.value;
+          accountProfileState.draft.selectedAddress = '';
+          accountProfileState.draft.addressApiError = '';
+          if (accountProfileState.errors.addressQuery || accountProfileState.errors.selectedAddress) {
+            accountProfileState.errors = { ...accountProfileState.errors, addressQuery: '', selectedAddress: '' };
+          }
+          accountProfileState.notice = '';
+          fetchAccountProfileAddressSuggestions(input.value);
+          return;
+        }
+        if (accountProfileState.errors[input.name]) {
+          accountProfileState.errors = { ...accountProfileState.errors, [input.name]: '' };
+        }
+        accountProfileState.notice = '';
+      });
+    });
+
+    document.querySelectorAll('[data-account-address-option]').forEach((button) => {
+      button.onclick = () => {
+        const placeId = button.getAttribute('data-account-address-option') || '';
+        if (placeId) {
+          selectAccountProfileAddress(placeId);
+        }
+      };
+    });
+
+    profileForm.onsubmit = (event) => {
+      event.preventDefault();
+      const formData = new FormData(profileForm);
+      const addressQuery = String(formData.get('addressQuery') || '').trim();
+      const draft = {
+        ...accountProfileState.draft,
+        name: String(formData.get('name') || '').trim(),
+        email: String(formData.get('email') || '').trim(),
+        addressQuery,
+        address: accountProfileState.draft.selectedAddress || addressQuery,
+        addressLine2: String(formData.get('addressLine2') || '').trim(),
+        postalCode: String(formData.get('postalCode') || '').trim().toUpperCase(),
+        marketingConsent: Boolean(formData.get('marketingConsent')),
+      };
+      const errors = validateAccountProfileDraft(draft);
+      if (Object.keys(errors).length) {
+        accountProfileState.isEditing = true;
+        accountProfileState.notice = '';
+        accountProfileState.errors = errors;
+        accountProfileState.draft = draft;
+        rerenderAccountProfileView();
+        return;
+      }
+      authState.name = draft.name;
+      authState.email = draft.email;
+      authState.address = draft.address;
+      authState.addressLine2 = draft.addressLine2;
+      authState.postalCode = draft.postalCode;
+      authState.marketingConsent = draft.marketingConsent;
+      accountProfileState.isEditing = false;
+      accountProfileState.notice = 'Profile details saved.';
+      accountProfileState.errors = {};
+      accountProfileState.draft = createAccountProfileDraft();
+      renderAccountDashboard('profile');
+      attachSharedControls();
+      attachAccountDashboardControls();
+    };
+  }
+}
+
 function attachCheckoutControls() {
   const form = document.querySelector('[data-checkout-form="true"]');
   if (!form) return;
@@ -3002,11 +3954,14 @@ function attachCheckoutControls() {
       attachSharedControls();
       attachCheckoutControls();
       window.setTimeout(() => {
-        checkoutFormState.isSubmitting = false;
-        checkoutFormState.banner = 'Stripe integration point is ready. Backend payment logic is not connected yet.';
-        renderCheckout();
-        attachSharedControls();
-        attachCheckoutControls();
+        latestOrderState = buildOrderFromCheckout();
+        if (authState.isLoggedIn) {
+          authState.points = Math.max(0, authState.points - (checkoutFormState.redeemEnabled ? checkoutFormState.redeemPoints : 0)) + latestOrderState.earnedPoints;
+        }
+        cartState = [];
+        resetCheckoutFormState();
+        clearSlider();
+        navigateToRoute(orderStatusRoute(latestOrderState.id));
       }, 1100);
     };
   });
@@ -3060,6 +4015,27 @@ function renderApp() {
     document.title = "Seoul Basket Checkout";
     attachSharedControls();
     attachCheckoutControls();
+    return;
+  }
+
+  if (route.page === "account") {
+    clearSlider();
+    if (!authState.isLoggedIn) {
+      navigateToRoute('#login');
+      return;
+    }
+    renderAccountDashboard(route.tab || 'orders');
+    document.title = "Seoul Basket My Account";
+    attachSharedControls();
+    attachAccountDashboardControls();
+    return;
+  }
+
+  if (route.page === "order-status") {
+    clearSlider();
+    renderOrderStatus(route.id || '');
+    document.title = "Seoul Basket Order Status";
+    attachSharedControls();
     return;
   }
 
