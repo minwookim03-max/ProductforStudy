@@ -224,6 +224,51 @@ const products = [
     description: "Sweet crisp grapes selected for gifting, entertaining, or premium fruit baskets.",
     image: "Fruit tray",
   },
+  {
+    id: 11,
+    name: "Tax Check Pantry Combo",
+    seller: "Seoul Basket Test Kitchen",
+    price: 12.8,
+    compareAtPrice: null,
+    badge: "Tax",
+    tags: ["Hot"],
+    states: ["ready"],
+    rating: 4.7,
+    reviews: 22,
+    delivery: "Useful for checkout tax verification",
+    description: "A compact pantry bundle priced to make province-based tax changes easy to verify.",
+    image: "Tax combo",
+  },
+  {
+    id: 12,
+    name: "Ontario Snack Cart Pack",
+    seller: "Hanok Treats",
+    price: 26.4,
+    compareAtPrice: null,
+    badge: "Tax",
+    tags: ["Best Seller"],
+    states: ["ready"],
+    rating: 4.8,
+    reviews: 17,
+    delivery: "Good for subtotal and tax testing",
+    description: "A snack bundle with a subtotal that shows province tax differences clearly.",
+    image: "Snack pack",
+  },
+  {
+    id: 13,
+    name: "Premium Home Care Set",
+    seller: "Glow Seoul Living",
+    price: 41.25,
+    compareAtPrice: 46.5,
+    badge: "Tax",
+    tags: [],
+    states: [],
+    rating: 4.6,
+    reviews: 11,
+    delivery: "Lifestyle item for tax scenario checks",
+    description: "A higher-price lifestyle bundle added so tax and points calculations are easier to inspect.",
+    image: "Home care",
+  },
 ];
 
 const productProfiles = {
@@ -522,7 +567,7 @@ function createCheckoutFormState() {
     billingProvince: "",
     billingCountry: "Canada",
     redeemEnabled: false,
-    redeemPoints: authState.points >= 2500 ? 500 : 0,
+    redeemPoints: authState.points >= 2500 ? 2500 : 0,
     addressOptions: [],
     addressLoading: false,
     addressApiError: "",
@@ -1059,7 +1104,8 @@ function money(value) {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
     currency: "CAD",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
@@ -1177,6 +1223,49 @@ function cartTotal() {
   return cartSubtotal() + cartDeliveryFee();
 }
 
+const provinceTaxProfiles = {
+  Alberta: { rate: 0.05, label: 'GST' },
+  "British Columbia": { rate: 0.12, label: 'GST/PST' },
+  Manitoba: { rate: 0.12, label: 'GST/PST' },
+  "New Brunswick": { rate: 0.15, label: 'HST' },
+  "Newfoundland and Labrador": { rate: 0.15, label: 'HST' },
+  "Northwest Territories": { rate: 0.05, label: 'GST' },
+  "Nova Scotia": { rate: 0.14, label: 'HST' },
+  Nunavut: { rate: 0.05, label: 'GST' },
+  Ontario: { rate: 0.13, label: 'HST' },
+  "Prince Edward Island": { rate: 0.15, label: 'HST' },
+  Quebec: { rate: 0.14975, label: 'GST/QST' },
+  Saskatchewan: { rate: 0.11, label: 'GST/PST' },
+  Yukon: { rate: 0.05, label: 'GST' },
+};
+
+function currencyRound(value) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function shippingProvinceTaxProfile(province = "") {
+  return provinceTaxProfiles[province] || { rate: 0, label: 'Tax' };
+}
+
+function shippingProvinceTaxRate(province = "") {
+  return shippingProvinceTaxProfile(province).rate;
+}
+
+function shippingProvinceTaxLabel(province = "") {
+  const profile = shippingProvinceTaxProfile(province);
+  return `${profile.label} (${formatTaxRate(profile.rate)}%)`;
+}
+
+function checkoutTaxAmount() {
+  const taxableSubtotal = Math.max(0, cartSubtotal() - checkoutPointsDiscount());
+  return currencyRound(taxableSubtotal * shippingProvinceTaxRate(checkoutFormState.shippingProvince));
+}
+
+function formatTaxRate(rate = 0) {
+  const percentage = rate * 100;
+  return Number.isInteger(percentage) ? String(percentage) : percentage.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+}
+
 function formatOrderTimestamp(date) {
   return new Intl.DateTimeFormat("en-CA", {
     month: "short",
@@ -1187,6 +1276,23 @@ function formatOrderTimestamp(date) {
     hour12: true,
     timeZone: "UTC",
   }).format(date).replace(",", " ·");
+}
+
+function conciseOrderPlacedAt(value = "") {
+  const [datePartRaw = "", timePartRaw = ""] = value.split("·");
+  const datePart = datePartRaw.trim().replace(/\s+\d{4}$/, "");
+  const timePart = timePartRaw.trim();
+  return [datePart, timePart].filter(Boolean).join(" · ") || value;
+}
+
+function conciseDeliverySlotDate(value = "") {
+  const [datePartRaw = ""] = value.split("·");
+  return datePartRaw.trim().replace(/^[A-Za-z]{3},\s*/, "") || value;
+}
+
+function conciseDeliverySlotRoute(value = "") {
+  const [, routePartRaw = ""] = value.split("·");
+  return routePartRaw.trim() || "";
 }
 
 function composeAddressLine(address, addressLine2, city, province, postalCode, country = "Canada") {
@@ -1252,9 +1358,11 @@ function createOrderStatusRecord() {
     ],
     subtotal: 63,
     deliveryFee: 9,
+    tax: 3.6,
+    taxLabel: 'GST (5%)',
     pointsDiscount: 0,
-    total: 72,
-    earnedPoints: 72,
+    total: 75.6,
+    earnedPoints: 315,
     timeline: buildOrderTimeline("packed", checkoutDeliverySlots[0]),
   };
 }
@@ -1270,6 +1378,8 @@ function buildOrderFromCheckout() {
   const subtotal = cartSubtotal();
   const deliveryFee = cartDeliveryFee();
   const pointsDiscount = checkoutPointsDiscount();
+  const tax = checkoutTaxAmount();
+  const taxLabel = checkoutFormState.shippingProvince ? shippingProvinceTaxLabel(checkoutFormState.shippingProvince) : 'Tax';
   const total = checkoutGrandTotal();
   const earnedPoints = checkoutEstimatedEarnPoints();
   const shippingAddress = composeAddressLine(
@@ -1307,6 +1417,8 @@ function buildOrderFromCheckout() {
     items,
     subtotal,
     deliveryFee,
+    tax,
+    taxLabel,
     pointsDiscount,
     total,
     earnedPoints,
@@ -1569,21 +1681,46 @@ function cartSummaryItems() {
 
 function availableRedeemPoints() {
   if (!authState.isLoggedIn || authState.points < 2500) return 0;
-  return authState.points - (authState.points % 500);
+  return authState.points;
+}
+
+function pointsCashValue(points = 0) {
+  return points / 500;
+}
+
+function pointsRemainingToRedeem(points = authState.points || 0) {
+  return Math.max(0, 2500 - points);
+}
+
+function maxCheckoutRedeemPoints() {
+  if (!authState.isLoggedIn) return 0;
+  const byBalance = availableRedeemPoints();
+  const byOrder = Math.floor(cartSubtotal() * 500);
+  const capped = Math.min(byBalance, byOrder);
+  return capped >= 2500 ? capped : 0;
+}
+
+function normalizeRedeemPoints(value) {
+  const max = maxCheckoutRedeemPoints();
+  if (!max) return 0;
+  const numeric = Math.floor(Number(value || 0));
+  const stepped = Math.floor(numeric / 5) * 5;
+  const clamped = Math.min(Math.max(stepped, 2500), max);
+  return clamped >= 2500 ? clamped : 0;
 }
 
 function checkoutPointsDiscount() {
   if (!authState.isLoggedIn || !checkoutFormState.redeemEnabled) return 0;
-  const allowed = Math.min(checkoutFormState.redeemPoints || 0, availableRedeemPoints());
-  return allowed / 500;
+  return pointsCashValue(normalizeRedeemPoints(checkoutFormState.redeemPoints));
 }
 
 function checkoutGrandTotal() {
-  return Math.max(0, cartSubtotal() + cartDeliveryFee() - checkoutPointsDiscount());
+  return Math.max(0, cartSubtotal() + cartDeliveryFee() + checkoutTaxAmount() - checkoutPointsDiscount());
 }
 
 function checkoutEstimatedEarnPoints() {
-  return Math.max(0, Math.floor(checkoutGrandTotal()));
+  const redeemDiscount = checkoutFormState.redeemEnabled ? checkoutPointsDiscount() : 0;
+  return Math.max(0, Math.floor((cartSubtotal() - redeemDiscount) * 5));
 }
 
 function productCard(product, options = {}) {
@@ -2178,6 +2315,7 @@ function checkoutMarkup() {
   const subtotal = cartSubtotal();
   const deliveryFee = cartDeliveryFee(subtotal);
   const pointsDiscount = checkoutPointsDiscount();
+  const tax = checkoutTaxAmount();
   const total = checkoutGrandTotal();
   const estimatedEarnPoints = checkoutEstimatedEarnPoints();
   const redeemablePoints = availableRedeemPoints();
@@ -2185,10 +2323,9 @@ function checkoutMarkup() {
   const billingSuggestions = checkoutFormState.billingAddressOptions || [];
   const errors = checkoutFormState.errors || {};
   const buttonLabel = checkoutFormState.isSubmitting ? "Placing Order..." : "Place Order";
-  const redeemOptions = Array.from({ length: Math.max(0, redeemablePoints / 500) }, (_, index) => {
-    const value = (index + 1) * 500;
-    return `<option value="${value}" ${checkoutFormState.redeemPoints === value ? "selected" : ""}>${value}P (-${money(value / 500)})</option>`;
-  }).join("");
+  const maxRedeemPoints = maxCheckoutRedeemPoints();
+  const activeRedeemPoints = checkoutFormState.redeemEnabled ? normalizeRedeemPoints(checkoutFormState.redeemPoints || 2500) : 0;
+  const projectedBalance = Math.max(0, authState.points - activeRedeemPoints + estimatedEarnPoints);
   const provinceOptions = canadianProvinces.map((province) => `<option value="${province}" ${checkoutFormState.shippingProvince === province ? "selected" : ""}>${province}</option>`).join("");
   const billingProvinceOptions = canadianProvinces.map((province) => `<option value="${province}" ${checkoutFormState.billingProvince === province ? "selected" : ""}>${province}</option>`).join("");
   const countryOptions = countryRegions.map((country) => `<option value="${country}" ${checkoutFormState.billingCountry === country ? "selected" : ""}>${country}</option>`).join("");
@@ -2409,31 +2546,60 @@ function checkoutMarkup() {
                         </div>
                       `).join("")}
                     </div>
-                    ${authState.isLoggedIn ? `
-                      <div class="checkout-points-card">
-                        <div class="checkout-points-head">
-                          <strong>Seoul Points</strong>
-                          <span>${authState.points.toLocaleString()}P available</span>
-                        </div>
-                        <p class="checkout-points-copy">Estimated after this order: <strong>${estimatedEarnPoints.toLocaleString()}P</strong></p>
-                        ${redeemablePoints >= 2500 ? `
-                          <label class="checkout-redeem-toggle">
-                            <input type="checkbox" name="redeemEnabled" ${checkoutFormState.redeemEnabled ? "checked" : ""} />
-                            <span>Redeem points at 500P = $1</span>
-                          </label>
-                          <label class="form-field${checkoutFormState.redeemEnabled ? "" : " checkout-field-disabled"}">
-                            <span>Redeem amount</span>
-                            <select name="redeemPoints" ${checkoutFormState.redeemEnabled ? "" : "disabled"}>
-                              ${redeemOptions}
-                            </select>
-                          </label>
-                        ` : `<p class="checkout-points-copy">Redeem starts at 2,500P.</p>`}
-                      </div>
-                    ` : ""}
+                    <p class="checkout-points-guest-note">${authState.isLoggedIn ? 'You are signed in. Use points now and keep earning reward points on this order.' : 'Log in before you check out to start earning reward points right away on this purchase.'}</p>
                     <div class="cart-summary-rows checkout-summary-rows">
+                      ${authState.isLoggedIn ? `
+                        <div class="checkout-points-card" data-checkout-points-card="true">
+                          <div class="checkout-points-head">
+                            <strong>Reward points</strong>
+                            <span>${authState.points.toLocaleString()}P available</span>
+                          </div>
+                          <p class="checkout-points-copy">Earn <strong>${estimatedEarnPoints.toLocaleString()}P</strong> on this order based on the subtotal after any redeemed points. Every 500P gives you ${money(1)} off.</p>
+                          <div class="checkout-points-summary-row">
+                            <article class="checkout-points-stat">
+                              <span>Current points</span>
+                              <strong>${authState.points.toLocaleString()}P</strong>
+                            </article>
+                            <article class="checkout-points-stat">
+                              <span>Redeemable amount</span>
+                              <strong>${money(pointsCashValue(authState.points))}</strong>
+                            </article>
+                            <article class="checkout-points-stat">
+                              <span>After this order</span>
+                              <strong>${projectedBalance.toLocaleString()}P</strong>
+                            </article>
+                          </div>
+                          ${maxRedeemPoints >= 2500 ? `
+                            <label class="checkout-redeem-toggle">
+                              <input type="checkbox" name="redeemEnabled" ${checkoutFormState.redeemEnabled ? "checked" : ""} />
+                              <span>Redeem points at 500P = $1</span>
+                            </label>
+                            <div class="checkout-points-control-shell">
+                              <label class="form-field checkout-points-input-field">
+                                <span>Redeem amount</span>
+                                <input name="redeemPoints" type="number" min="2500" max="${maxRedeemPoints}" step="5" value="${checkoutFormState.redeemPoints ? normalizeRedeemPoints(checkoutFormState.redeemPoints) : 2500}" ${checkoutFormState.redeemEnabled ? '' : 'disabled'} />
+                              </label>
+                              <button class="button-secondary checkout-points-max-button" type="button" data-redeem-max="true" ${checkoutFormState.redeemEnabled ? '' : 'disabled'}>
+                                <span class="checkout-points-max-icon" aria-hidden="true">+</span>
+                                <span>Use full available points</span>
+                              </button>
+                              <label class="checkout-points-slider-label">
+                                <span>Adjust with slider</span>
+                                <input class="checkout-points-slider" name="redeemPointsRange" type="range" min="2500" max="${maxRedeemPoints}" step="5" value="${checkoutFormState.redeemPoints ? normalizeRedeemPoints(checkoutFormState.redeemPoints) : 2500}" ${checkoutFormState.redeemEnabled ? '' : 'disabled'} />
+                              </label>
+                              <div class="checkout-points-applied-card">
+                                <span>Discount applied</span>
+                                <strong>${checkoutFormState.redeemEnabled ? '-' + money(pointsCashValue(activeRedeemPoints)) : money(0)}</strong>
+                                <p>${checkoutFormState.redeemEnabled ? `${activeRedeemPoints.toLocaleString()}P will be redeemed on this order.` : 'Choose an amount, then check the box to apply it to this order.'}</p>
+                              </div>
+                            </div>
+                          ` : `<p class="checkout-points-copy">${authState.points < 2500 ? `You need ${pointsRemainingToRedeem().toLocaleString()}P more before points can be used at checkout.` : 'Add more items to this order to apply at least 2,500P.'}</p>`}
+                        </div>
+                      ` : ""}
                       <div class="cart-summary-row"><span>Subtotal</span><strong>${money(subtotal)}</strong></div>
-                      <div class="cart-summary-row"><span>Delivery fee</span><strong>${deliveryFee ? money(deliveryFee) : "Free"}</strong></div>
                       <div class="cart-summary-row"><span>Discount / points</span><strong>${pointsDiscount ? `-${money(pointsDiscount)}` : money(0)}</strong></div>
+                      <div class="cart-summary-row cart-summary-row-tax"><span>${checkoutFormState.shippingProvince ? shippingProvinceTaxLabel(checkoutFormState.shippingProvince) : 'Tax'}</span><strong>${money(tax)}</strong></div>
+                      <div class="cart-summary-row cart-summary-row-delivery"><span>Delivery fee</span><strong>${deliveryFee ? money(deliveryFee) : "Free"}</strong></div>
                       <div class="cart-summary-row cart-summary-total"><span>Total</span><strong>${money(total)}</strong></div>
                     </div>
                     <button class="button-primary cart-primary-action checkout-place-order" type="button" data-place-order="true" ${checkoutFormState.isSubmitting ? "disabled" : ""}>${buttonLabel}</button>
@@ -2475,9 +2641,11 @@ function accountOrderHistory() {
     ],
     subtotal: 40,
     deliveryFee: 9,
+    tax: 2.45,
+    taxLabel: 'GST (5%)',
     pointsDiscount: 0,
-    total: 49,
-    earnedPoints: 49,
+    total: 51.45,
+    earnedPoints: 200,
     supportNote: "Delivered orders remain available here for repeat purchase reference.",
     timeline: buildOrderTimeline("delivered", "Fri, Apr 10 · Calgary route"),
   };
@@ -2663,13 +2831,39 @@ async function selectAccountProfileAddress(placeId) {
 }
 
 function accountPointsHistory() {
-  return accountOrderHistory().map((order) => ({
-    date: order.placedAt,
-    orderId: order.id,
-    paymentAmount: order.total,
-    earnedPoints: order.earnedPoints,
-    redeemedPoints: Math.max(0, Math.round((order.pointsDiscount || 0) * 500)),
-  }));
+  const history = accountOrderHistory().flatMap((order) => {
+    const entries = [
+      {
+        date: order.placedAt,
+        type: 'Earned',
+        orderId: order.id,
+        detail: `1% back from ${money(Math.max(0, order.subtotal - (order.pointsDiscount || 0)))} subtotal purchase`,
+        points: order.earnedPoints,
+      },
+    ];
+
+    if (order.pointsDiscount) {
+      entries.push({
+        date: order.placedAt,
+        type: 'Used',
+        orderId: order.id,
+        detail: `Applied ${money(order.pointsDiscount)} at checkout`,
+        points: -Math.max(0, Math.round((order.pointsDiscount || 0) * 500)),
+      });
+    }
+
+    return entries;
+  });
+
+  history.push({
+    date: 'Apr 1 2026 · 12:00 AM',
+    type: 'Expired',
+    orderId: 'Policy',
+    detail: 'Unused promotional bonus reached its expiry date.',
+    points: -300,
+  });
+
+  return history;
 }
 
 function accountOrdersSectionMarkup() {
@@ -2700,27 +2894,50 @@ function accountOrdersSectionMarkup() {
 function accountPointsSectionMarkup() {
   const available = authState.points || 0;
   const redeemable = availableRedeemPoints();
-  const nextReward = available >= 2500 ? "Redeem available now" : `${(2500 - available).toLocaleString()}P until next redeem`;
+  const redeemableValue = pointsCashValue(redeemable);
+  const nextReward = available >= 2500 ? 'Ready to use at checkout' : `${pointsRemainingToRedeem(available).toLocaleString()}P more needed to start redeeming`;
   const history = accountPointsHistory();
   return `
-    <section class="account-panel">
+    <section class="account-panel account-points-panel">
       <div class="section-header-copy">
         <p class="section-kicker">Points</p>
-        <h1 class="section-title">My Points</h1>
+        <h1 class="section-title">Reward Points</h1>
       </div>
-      <div class="account-points-grid">
-        <article class="account-stat-card">
-          <span>Available points</span>
+      <p class="account-points-intro">Earn 1% back on every purchase, then redeem starting at 2,500 points. Every 500 points gives you ${money(1)} off at checkout.</p>
+      <div class="account-points-hero">
+        <article class="account-points-balance-card">
+          <span class="account-points-card-label">Current points</span>
           <strong>${available.toLocaleString()}P</strong>
+          <p>Redeemable amount: <strong>${money(redeemableValue)}</strong></p>
         </article>
-        <article class="account-stat-card">
-          <span>Redeemable now</span>
-          <strong>${redeemable.toLocaleString()}P</strong>
-        </article>
-        <article class="account-stat-card">
-          <span>Next reward</span>
-          <strong>${nextReward}</strong>
-        </article>
+        <div class="account-points-summary-grid">
+          <article class="account-points-mini-card">
+            <span>Ready to redeem</span>
+            <strong>${redeemable.toLocaleString()}P</strong>
+            <p>${money(pointsCashValue(redeemable))} available now</p>
+          </article>
+          <article class="account-points-mini-card">
+            <span>How earning works</span>
+            <strong>1% back</strong>
+            <p>Spend more, earn more on each completed order.</p>
+          </article>
+          <article class="account-points-mini-card">
+            <span>Next step</span>
+            <strong>${nextReward}</strong>
+            <p>Points redeem in 500P steps.</p>
+          </article>
+        </div>
+      </div>
+      <div class="account-history-card account-points-rules-card">
+        <div class="section-header-copy">
+          <p class="section-kicker">How It Works</p>
+          <h2 class="section-title">Simple reward rules</h2>
+        </div>
+        <div class="account-points-rules-grid">
+          <div><span>Earn</span><strong>1% of every purchase</strong></div>
+          <div><span>Use minimum</span><strong>2,500P</strong></div>
+          <div><span>Conversion</span><strong>500P = ${money(1)}</strong></div>
+        </div>
       </div>
       <div class="account-history-card">
         <div class="section-header-copy">
@@ -2729,12 +2946,12 @@ function accountPointsSectionMarkup() {
         </div>
         <div class="account-points-history-list">
           ${history.map((entry) => `
-            <article class="account-points-history-row">
+            <article class="account-points-history-row account-points-history-row-${entry.type.toLowerCase()}">
               <div><span>Date</span><strong>${entry.date}</strong></div>
-              <div><span>Order</span><strong>${entry.orderId}</strong></div>
-              <div><span>Payment</span><strong>${money(entry.paymentAmount)}</strong></div>
-              <div><span>Earned</span><strong>+${entry.earnedPoints.toLocaleString()}P</strong></div>
-              <div><span>Redeemed</span><strong>${entry.redeemedPoints ? ('-' + entry.redeemedPoints.toLocaleString() + 'P') : '0P'}</strong></div>
+              <div><span>Type</span><strong>${entry.type}</strong></div>
+              <div><span>Reference</span><strong>${entry.orderId}</strong></div>
+              <div><span>Details</span><strong>${entry.detail}</strong></div>
+              <div><span>Points</span><strong>${entry.points > 0 ? '+' : ''}${entry.points.toLocaleString()}P</strong></div>
             </article>
           `).join('')}
         </div>
@@ -2887,47 +3104,54 @@ function orderStatusMarkup(orderId = "") {
                   <span>Order Status</span>
                 </section>
 
-                <section class="order-status-hero">
-                  <div class="order-status-hero-copy">
-                    <p class="section-kicker">Order status</p>
-                    <h1 class="section-title">${order.headline}</h1>
-                    <p class="order-status-summary">${order.summary}</p>
-                    <div class="order-status-pill-row">
-                      <span class="order-status-pill is-strong">${order.id}</span>
-                      <span class="order-status-pill">${order.paymentStatus}</span>
-                      <span class="order-status-pill">${order.fulfillmentStatus}</span>
-                    </div>
-                  </div>
-                  <div class="order-status-meta-card">
-                    <div class="order-meta-row"><span>Placed</span><strong>${order.placedAt}</strong></div>
-                    <div class="order-meta-row"><span>Delivery slot</span><strong>${order.deliveryDate}</strong></div>
-                  </div>
-                </section>
-
-                <section class="order-status-section">
-                  <div class="section-header-row">
-                    <div class="section-header-copy">
-                      <p class="section-kicker">Progress</p>
-                      <h2 class="section-title">Delivery timeline</h2>
-                    </div>
-                  </div>
-                  <div class="order-timeline">
-                    ${order.timeline.map((stage) => `
-                      <article class="order-timeline-card is-${stage.state}">
-                        <div class="order-timeline-marker">${stage.state === "complete" ? "✓" : stage.state === "current" ? "•" : "○"}</div>
-                        <div class="order-timeline-copy">
-                          <strong>${stage.label}</strong>
-                          <p>${stage.detail}</p>
+                <section class="order-status-layout">
+                  <div class="order-status-left-column">
+                    <section class="order-status-hero">
+                      <div class="order-status-hero-copy">
+                        <p class="section-kicker">Order status</p>
+                        <h1 class="section-title">${order.headline}</h1>
+                        <p class="order-status-summary">${order.summary}</p>
+                        <div class="order-status-pill-row">
+                          <span class="order-status-pill is-strong">${order.id}</span>
+                          <span class="order-status-pill">${order.paymentStatus}</span>
+                          <span class="order-status-pill">${order.fulfillmentStatus}</span>
                         </div>
-                        <span class="order-timeline-state">${stage.state === "complete" ? "Done" : stage.state === "current" ? "Now" : "Next"}</span>
-                      </article>
-                    `).join("")}
-                  </div>
-                </section>
+                      </div>
+                      <div class="order-status-meta-card">
+                        <div class="order-meta-block">
+                          <span>Placed</span>
+                          <strong>${conciseOrderPlacedAt(order.placedAt)}</strong>
+                        </div>
+                        <div class="order-meta-block order-meta-block-delivery">
+                          <span>Delivery slot</span>
+                          <strong>${conciseDeliverySlotDate(order.deliveryDate)}</strong>
+                          <small class="order-meta-subline">${conciseDeliverySlotRoute(order.deliveryDate)}</small>
+                        </div>
+                      </div>
+                    </section>
 
-                <section class="order-status-grid">
-                  <div class="order-status-main">
-                    <article class="order-status-section">
+                    <article class="order-status-section order-status-progress-panel">
+                      <div class="section-header-row">
+                        <div class="section-header-copy">
+                          <p class="section-kicker">Progress</p>
+                          <h2 class="section-title">Delivery timeline</h2>
+                        </div>
+                      </div>
+                      <div class="order-timeline">
+                        ${order.timeline.map((stage) => `
+                          <article class="order-timeline-card is-${stage.state}">
+                            <div class="order-timeline-marker">${stage.state === "complete" ? "✓" : stage.state === "current" ? "•" : "○"}</div>
+                            <div class="order-timeline-copy">
+                              <strong>${stage.label}</strong>
+                              <p>${stage.detail}</p>
+                            </div>
+                            <span class="order-timeline-state">${stage.state === "complete" ? "Done" : stage.state === "current" ? "Now" : "Next"}</span>
+                          </article>
+                        `).join("")}
+                      </div>
+                    </article>
+
+                    <article class="order-status-section order-status-items-section">
                       <div class="section-header-row">
                         <div class="section-header-copy">
                           <p class="section-kicker">Items</p>
@@ -2955,22 +3179,25 @@ function orderStatusMarkup(orderId = "") {
                   </div>
 
                   <aside class="order-status-side">
-                    <article class="order-status-card">
-                      <p class="section-kicker">Recipient</p>
-                      <strong>${order.customerName}</strong>
-                      <p>${order.phone}</p>
-                    </article>
-                    <article class="order-status-card">
-                      <p class="section-kicker">Shipping address</p>
-                      <strong>${order.shippingAddress}</strong>
-                    </article>
-                    <article class="order-status-card">
-                      <p class="section-kicker">Order summary</p>
-                      <div class="cart-summary-rows checkout-summary-rows">
-                        <div class="cart-summary-row"><span>Subtotal</span><strong>${money(order.subtotal)}</strong></div>
-                        <div class="cart-summary-row"><span>Delivery fee</span><strong>${order.deliveryFee ? money(order.deliveryFee) : "Free"}</strong></div>
-                        <div class="cart-summary-row"><span>Discount / points</span><strong>${order.pointsDiscount ? `-${money(order.pointsDiscount)}` : money(0)}</strong></div>
-                        <div class="cart-summary-row cart-summary-total"><span>Total</span><strong>${money(order.total)}</strong></div>
+                    <article class="order-status-card order-status-combined-card">
+                      <div class="order-status-combined-block">
+                        <p class="section-kicker">Recipient</p>
+                        <strong>${order.customerName}</strong>
+                        <p>${order.phone}</p>
+                      </div>
+                      <div class="order-status-combined-block">
+                        <p class="section-kicker">Shipping address</p>
+                        <strong>${order.shippingAddress}</strong>
+                      </div>
+                      <div class="order-status-combined-block">
+                        <p class="section-kicker">Order summary</p>
+                        <div class="cart-summary-rows checkout-summary-rows">
+                          <div class="cart-summary-row"><span>Subtotal</span><strong>${money(order.subtotal)}</strong></div>
+                          <div class="cart-summary-row"><span>Discount / points</span><strong>${order.pointsDiscount ? `-${money(order.pointsDiscount)}` : money(0)}</strong></div>
+                          <div class="cart-summary-row cart-summary-row-tax"><span>${order.taxLabel || 'Tax'}</span><strong>${money(order.tax || 0)}</strong></div>
+                          <div class="cart-summary-row cart-summary-row-delivery"><span>Delivery fee</span><strong>${order.deliveryFee ? money(order.deliveryFee) : "Free"}</strong></div>
+                          <div class="cart-summary-row cart-summary-total"><span>Total</span><strong>${money(order.total)}</strong></div>
+                        </div>
                       </div>
                       <p class="order-status-support">${order.supportNote}</p>
                       <div class="order-status-action-row">
@@ -3815,8 +4042,8 @@ function attachCheckoutControls() {
     const syncField = () => {
       if (input instanceof HTMLInputElement && input.type === 'checkbox') {
         checkoutFormState[input.name] = input.checked;
-      } else if (input.name === 'redeemPoints') {
-        checkoutFormState.redeemPoints = Number(input.value || 0);
+      } else if (input.name === 'redeemPoints' || input.name === 'redeemPointsRange') {
+        checkoutFormState.redeemPoints = normalizeRedeemPoints(input.value || checkoutFormState.redeemPoints || 2500);
       } else {
         checkoutFormState[input.name] = input.value;
       }
@@ -3883,12 +4110,22 @@ function attachCheckoutControls() {
       if (checkoutFormState.useShippingAsBillingAddress && ['addressLine2', 'postalCode', 'shippingCity', 'shippingProvince'].includes(input.name)) {
         syncBillingAddressFromShipping();
       }
+      if (input.name === 'shippingProvince') {
+        renderCheckout();
+        attachSharedControls();
+        attachCheckoutControls();
+        return;
+      }
 
+      if (input.name === 'redeemEnabled') {
+        checkoutFormState.redeemEnabled = input.checked;
+        checkoutFormState.redeemPoints = normalizeRedeemPoints(checkoutFormState.redeemPoints || 2500);
+      }
       if (checkoutFormState.errors[input.name]) {
         checkoutFormState.errors = { ...checkoutFormState.errors, [input.name]: '' };
       }
       checkoutFormState.banner = '';
-      if (input.name === 'redeemEnabled' || input.name === 'redeemPoints') {
+      if (input.name === 'redeemEnabled' || input.name === 'redeemPoints' || input.name === 'redeemPointsRange') {
         renderCheckout();
         attachSharedControls();
         attachCheckoutControls();
@@ -3898,6 +4135,61 @@ function attachCheckoutControls() {
     input.addEventListener('input', syncField);
     input.addEventListener('change', syncField);
   });
+
+  const rerenderCheckoutPoints = () => {
+    renderCheckout();
+    attachSharedControls();
+    attachCheckoutControls();
+  };
+
+  const redeemToggle = document.querySelector('[data-checkout-points-card="true"] input[name="redeemEnabled"]');
+  if (redeemToggle instanceof HTMLInputElement) {
+    const syncRedeemToggle = () => {
+      checkoutFormState.redeemEnabled = redeemToggle.checked;
+      checkoutFormState.redeemPoints = normalizeRedeemPoints(checkoutFormState.redeemPoints || redeemPointsInput?.value || redeemPointsRange?.value || 2500);
+      checkoutFormState.banner = '';
+      rerenderCheckoutPoints();
+    };
+    redeemToggle.onclick = syncRedeemToggle;
+    redeemToggle.onchange = syncRedeemToggle;
+  }
+
+  const redeemPointsInput = document.querySelector('[data-checkout-points-card="true"] input[name="redeemPoints"]');
+  if (redeemPointsInput instanceof HTMLInputElement) {
+    const syncRedeemPoints = () => {
+      checkoutFormState.redeemPoints = normalizeRedeemPoints(redeemPointsInput.value || checkoutFormState.redeemPoints || 2500);
+      checkoutFormState.banner = '';
+      if (redeemPointsRange instanceof HTMLInputElement) redeemPointsRange.value = String(checkoutFormState.redeemPoints || 2500);
+      if (redeemPointsInput instanceof HTMLInputElement) redeemPointsInput.value = String(checkoutFormState.redeemPoints || 2500);
+      rerenderCheckoutPoints();
+    };
+    redeemPointsInput.oninput = syncRedeemPoints;
+    redeemPointsInput.onchange = syncRedeemPoints;
+  }
+
+  const redeemPointsRange = document.querySelector('[data-checkout-points-card="true"] input[name="redeemPointsRange"]');
+  if (redeemPointsRange instanceof HTMLInputElement) {
+    const syncRedeemRange = () => {
+      checkoutFormState.redeemPoints = normalizeRedeemPoints(redeemPointsRange.value || checkoutFormState.redeemPoints || 2500);
+      checkoutFormState.banner = '';
+      if (redeemPointsInput instanceof HTMLInputElement) redeemPointsInput.value = String(checkoutFormState.redeemPoints || 2500);
+      if (redeemPointsRange instanceof HTMLInputElement) redeemPointsRange.value = String(checkoutFormState.redeemPoints || 2500);
+      rerenderCheckoutPoints();
+    };
+    redeemPointsRange.oninput = syncRedeemRange;
+    redeemPointsRange.onchange = syncRedeemRange;
+  }
+
+  const redeemMaxButton = document.querySelector('[data-redeem-max="true"]');
+  if (redeemMaxButton instanceof HTMLButtonElement) {
+    redeemMaxButton.onclick = () => {
+      checkoutFormState.redeemPoints = maxCheckoutRedeemPoints();
+      checkoutFormState.banner = '';
+      if (redeemPointsInput instanceof HTMLInputElement) redeemPointsInput.value = String(checkoutFormState.redeemPoints || 2500);
+      if (redeemPointsRange instanceof HTMLInputElement) redeemPointsRange.value = String(checkoutFormState.redeemPoints || 2500);
+      rerenderCheckoutPoints();
+    };
+  }
 
   document.querySelectorAll('[data-checkout-address-option]').forEach((button) => {
     button.onclick = () => {
@@ -3956,7 +4248,7 @@ function attachCheckoutControls() {
       window.setTimeout(() => {
         latestOrderState = buildOrderFromCheckout();
         if (authState.isLoggedIn) {
-          authState.points = Math.max(0, authState.points - (checkoutFormState.redeemEnabled ? checkoutFormState.redeemPoints : 0)) + latestOrderState.earnedPoints;
+          authState.points = Math.max(0, authState.points - (checkoutFormState.redeemEnabled ? normalizeRedeemPoints(checkoutFormState.redeemPoints) : 0)) + latestOrderState.earnedPoints;
         }
         cartState = [];
         resetCheckoutFormState();
