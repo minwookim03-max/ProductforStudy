@@ -363,6 +363,21 @@ const sectionProducts = {
   new: [2, 4, 7, 9, 10],
   deals: [6, 10, 2, 8, 4],
 };
+const quickCategoryProducts = {
+  'vans-pick': [1, 8, 3, 5, 7],
+  'soups-side-dishes': [8, 2, 1, 7],
+  kimchi: [3, 1, 8, 11],
+  'meal-kits': [2, 7, 8, 11],
+  'fruits-vegetables': [4, 10, 1, 11],
+  meat: [5, 8, 2, 1],
+  seafood: [6, 8, 10, 2],
+  'snacks-desserts': [7, 12, 11, 10],
+  'home-beauty': [9, 13, 10, 11],
+};
+
+const quickCategoryFilterMeta = Object.fromEntries(
+  quickCategories.map((category) => [category.id, { eyebrow: 'Quick categories', title: category.label }])
+);
 
 const deliveryZones = [
   { icon: "Cal", title: "Calgary", note: "Primary delivery zone", eta: "Estimated Apr 16-17, 2026" },
@@ -438,7 +453,103 @@ const countryRegions = [
   "Vietnam", "Yemen", "Zambia", "Zimbabwe",
 ];
 
+const languageOptions = {
+  en: { code: 'EN', name: 'English' },
+  ko: { code: 'KO', name: '한국어' },
+};
+
+const categoryLabels = {
+  en: {
+    'vans-pick': "Van's Pick",
+    'soups-side-dishes': 'Soups / Side Dishes',
+    kimchi: 'Kimchi',
+    'meal-kits': 'Meal Kits',
+    'fruits-vegetables': 'Fruits / Vegetables',
+    meat: 'Meat',
+    seafood: 'Seafood',
+    'snacks-desserts': 'Snacks / Desserts',
+    'home-beauty': 'Home / Beauty',
+  },
+  ko: {
+    'vans-pick': '반찬 추천',
+    'soups-side-dishes': '국 / 반찬',
+    kimchi: '김치',
+    'meal-kits': '밀키트',
+    'fruits-vegetables': '과일 / 채소',
+    meat: '정육',
+    seafood: '수산',
+    'snacks-desserts': '간식 / 디저트',
+    'home-beauty': '생활 / 뷰티',
+  },
+};
+
+const uiMessages = {
+  en: {
+    login: 'Login', sign_in: 'Sign in', my_account: 'My Account', member: 'Member',
+    my_orders: 'My Orders', my_points: 'My Points', profile: 'Profile', logout: 'Logout',
+    search_placeholder: 'What are you looking for?', search_aria: 'Search', cart: 'Cart', change_language: 'Change language',
+    menu: 'Menu', notice: 'Notice', categories_menu: 'Categories', menu_back: 'Back', menu_close: 'Close', shop_all_in: 'Shop all in',
+    notice_text: 'Weekly flyer updates every Tuesday for Calgary shoppers · Free delivery over CA$100 · Calgary / Airdrie / Cochrane route notices posted every morning',
+    nav_home: 'Home', nav_categories: 'Categories', nav_new_arrivals: 'New Arrivals', nav_time_deals: 'Time Deals', nav_best_sellers: 'Best Sellers', nav_brand_hall: 'Brand Hall',
+    quick_categories: 'Quick categories', shop_by_category: 'Shop by category', view_all_product: 'View all Product', show_all_sections: 'Show all sections', view_as: 'View as', list_view: 'List view', grid_view: 'Grid view',
+    featured_eyebrow: "Van's Pick", featured_title: "Van's Pick", best_eyebrow: 'Best sellers', best_title: 'Best Sellers', new_eyebrow: 'New arrivals', new_title: 'New Arrivals', deals_eyebrow: 'Time deals', deals_title: 'Time Deals',
+    quick_category_eyebrow: 'Quick categories', filtered_products_suffix: 'Products', brand_hall: 'Brand hall', trusted_sellers: 'Trusted Calgary sellers', back_to_top: 'Back to Top',
+    community_perks: 'Community perks', join_rewards_title: 'Join KakaoTalk updates and member rewards', join_rewards_copy: 'Get weekly flyer updates, delivery route notices, and seller-only bonus point events for Calgary shoppers.', join_community: 'Join Community', see_rewards: 'See Rewards',
+    footer_brand_title: 'Korean grocery and lifestyle marketplace for Calgary', footer_brand_copy: 'Order weekly Korean groceries, prepared meals, pantry staples, and trusted local delivery picks in one place.', footer_shop: 'Shop', footer_support: 'Support', footer_follow: 'Follow', footer_delivery_notice: 'Delivery notice', footer_customer_care: 'Customer care', footer_order_help: 'Order help', footer_community: 'Community',
+    site_map: 'Site Map', sitemap_marketplace: 'Marketplace', sitemap_help: 'Shopping Help', sitemap_customer: 'Customer Care', delivery_info: 'Delivery Info', faq: 'FAQ', contact_us: 'Contact Us',
+    title_login: 'Seoul Basket Login', title_register: 'Seoul Basket Register', title_product: 'Seoul Basket Product Details', title_cart: 'Seoul Basket Cart', title_checkout: 'Seoul Basket Checkout', title_account: 'Seoul Basket My Account', title_order_status: 'Seoul Basket Order Status', title_home: 'Seoul Basket Calgary Marketplace'
+  },
+  ko: {
+    login: '로그인', sign_in: '로그인', my_account: '내 계정', member: '회원',
+    my_orders: '주문내역', my_points: '포인트', profile: '프로필', logout: '로그아웃',
+    search_placeholder: '무엇을 찾고 계신가요?', search_aria: '검색', cart: '장바구니', change_language: '언어 변경',
+    menu: '메뉴', notice: '공지', categories_menu: '카테고리', menu_back: '뒤로', menu_close: '닫기', shop_all_in: '전체 보기',
+    notice_text: '캘거리 고객을 위한 주간 전단은 매주 화요일 업데이트 · CA$100 이상 무료 배송 · 캘거리 / 에어드리 / 코크레인 배송 공지는 매일 오전 안내',
+    nav_home: '홈', nav_categories: '카테고리', nav_new_arrivals: '신상품', nav_time_deals: '타임딜', nav_best_sellers: '베스트셀러', nav_brand_hall: '브랜드홀',
+    quick_categories: '퀵 카테고리', shop_by_category: '카테고리별 쇼핑', view_all_product: '전체 상품 보기', show_all_sections: '전체 섹션 보기', view_as: '보기 방식', list_view: '리스트 보기', grid_view: '그리드 보기',
+    featured_eyebrow: '반찬 추천', featured_title: '반찬 추천', best_eyebrow: '베스트셀러', best_title: '베스트셀러', new_eyebrow: '신상품', new_title: '신상품', deals_eyebrow: '타임딜', deals_title: '타임딜',
+    quick_category_eyebrow: '퀵 카테고리', filtered_products_suffix: '상품', brand_hall: '브랜드홀', trusted_sellers: '캘거리 인기 판매자', back_to_top: '맨 위로',
+    community_perks: '커뮤니티 혜택', join_rewards_title: '카카오톡 업데이트와 멤버 리워드를 받아보세요', join_rewards_copy: '주간 전단, 배송 노선 공지, 판매자 전용 포인트 이벤트를 캘거리 고객에게 안내합니다.', join_community: '커뮤니티 참여', see_rewards: '리워드 보기',
+    footer_brand_title: '캘거리 한인 식료품 및 라이프스타일 마켓플레이스', footer_brand_copy: '주간 장보기, 반찬, 밀키트, 팬트리 상품과 현지 배송 상품을 한 곳에서 주문하세요.', footer_shop: '쇼핑', footer_support: '고객지원', footer_follow: '팔로우', footer_delivery_notice: '배송 공지', footer_customer_care: '고객센터', footer_order_help: '주문 도움', footer_community: '커뮤니티',
+    site_map: '사이트맵', sitemap_marketplace: '마켓플레이스', sitemap_help: '쇼핑 안내', sitemap_customer: '고객센터', delivery_info: '배송 안내', faq: '자주 묻는 질문', contact_us: '문의하기',
+    title_login: '서울바스켓 로그인', title_register: '서울바스켓 회원가입', title_product: '서울바스켓 상품 상세', title_cart: '서울바스켓 장바구니', title_checkout: '서울바스켓 체크아웃', title_account: '서울바스켓 내 계정', title_order_status: '서울바스켓 주문조회', title_home: '서울바스켓 캘거리 마켓플레이스'
+  },
+};
+
+function languageFlagDataUrl(language) {
+  const svg = language === 'ko'
+    ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18"><rect width="20" height="18" rx="4" fill="#fff"/><g fill="#111"><rect x="3" y="4.1" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 3 4.1)"/><rect x="3.55" y="5.3" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 3.55 5.3)"/><rect x="4.1" y="6.5" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 4.1 6.5)"/><rect x="13.9" y="11.5" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 13.9 11.5)"/><rect x="14.45" y="12.7" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 14.45 12.7)"/><rect x="15" y="13.9" width="3.4" height="0.75" rx="0.2" transform="rotate(-28 15 13.9)"/><rect x="14.1" y="4.1" width="3.4" height="0.75" rx="0.2" transform="rotate(28 14.1 4.1)"/><rect x="14.65" y="5.3" width="1.45" height="0.75" rx="0.2" transform="rotate(28 14.65 5.3)"/><rect x="16.6" y="6.34" width="1.45" height="0.75" rx="0.2" transform="rotate(28 16.6 6.34)"/><rect x="14.1" y="6.5" width="3.4" height="0.75" rx="0.2" transform="rotate(28 14.1 6.5)"/><rect x="3.1" y="11.4" width="1.45" height="0.75" rx="0.2" transform="rotate(28 3.1 11.4)"/><rect x="5.03" y="12.47" width="1.45" height="0.75" rx="0.2" transform="rotate(28 5.03 12.47)"/><rect x="3.65" y="12.6" width="3.4" height="0.75" rx="0.2" transform="rotate(28 3.65 12.6)"/><rect x="4.2" y="13.8" width="3.4" height="0.75" rx="0.2" transform="rotate(28 4.2 13.8)"/></g><g transform="translate(10 9) rotate(-32)"><path d="M0-3.1a3.1 3.1 0 0 1 0 6.2A3.1 3.1 0 0 1 0-3.1Z" fill="#cd2e3a"/><path d="M0 3.1a3.1 3.1 0 0 1 0-6.2A3.1 3.1 0 0 1 0 3.1Z" fill="#0047a0"/><path d="M0-3.1a1.55 1.55 0 0 0 0 3.1 1.55 1.55 0 0 1 0 3.1A3.1 3.1 0 0 1 0-3.1Z" fill="#0047a0"/><path d="M0 3.1a1.55 1.55 0 0 0 0-3.1 1.55 1.55 0 0 1 0-3.1A3.1 3.1 0 0 1 0 3.1Z" fill="#cd2e3a"/></g></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18"><rect width="20" height="18" rx="4" fill="#fff"/><rect width="4" height="18" fill="#d52b1e"/><rect x="16" width="4" height="18" fill="#d52b1e"/><path d="M10 5.2 11 7h1.8l-1.45 1.1.56 1.8L10 8.95 8.1 9.9l.56-1.8L7.2 7H9z" fill="#d52b1e"/></svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+function getStoredLanguage() {
+  try {
+    const stored = window.localStorage.getItem('seoul-basket-language');
+    return stored === 'ko' || stored === 'en' ? stored : 'en';
+  } catch (error) {
+    return 'en';
+  }
+}
+
+function persistLanguage(language) {
+  try { window.localStorage.setItem('seoul-basket-language', language); } catch (error) {}
+}
+
+function t(key) {
+  return uiMessages[currentLanguage]?.[key] || uiMessages.en[key] || key;
+}
+
+function translatedCategoryLabel(categoryId, fallback) {
+  return categoryLabels[currentLanguage]?.[categoryId] || fallback;
+}
+
+let currentLanguage = typeof window !== 'undefined' ? getStoredLanguage() : 'en';
+let isLanguageMenuOpen = false;
 let activeSlide = 0;
+let activeHomeSectionFilter = null;
+let activeHomeProductLayout = "grid";
+let activeMobileCategoryId = null;
 let slideIntervalId;
 let currentDetailTab = "description";
 let currentDetailQty = 1;
@@ -517,6 +628,7 @@ let accountProfileState = {
   },
 };
 let isAccountMenuOpen = false;
+let isMobileCategoryMenuOpen = false;
 let registerFormState = {
   name: "",
   email: "",
@@ -1135,6 +1247,11 @@ function accountRoute(tab = "orders") {
 }
 
 function navigateToRoute(route) {
+  isMobileCategoryMenuOpen = false;
+  if (route !== '#top') {
+    activeHomeSectionFilter = null;
+    activeHomeProductLayout = 'grid';
+  }
   if (window.location.hash === route) {
     renderApp();
     return;
@@ -1165,6 +1282,10 @@ function getCurrentRoute() {
   }
   if (hash === "#order-status") {
     return { page: "order-status" };
+  }
+  const policyMatch = hash.match(/^#policy-(shipping|returns|privacy|terms|faq|contact)$/);
+  if (policyMatch) {
+    return { page: "policy", policy: policyMatch[1] };
   }
   const orderMatch = hash.match(/^#order-(.+)$/);
   if (orderMatch) {
@@ -1447,14 +1568,44 @@ function userIconMarkup() {
   return '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6.1" r="3.1"></circle><path d="M3.6 16.4c1.4-2.9 3.7-4.3 6.4-4.3 2.8 0 5.1 1.4 6.4 4.3"></path></svg>';
 }
 
+function searchIconMarkup() {
+  return '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="4.75"></circle><path d="M12.2 12.2 16.4 16.4"></path></svg>';
+}
+
+function cartIconMarkup() {
+  return '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.1 4.2h1.8l1.3 7.1h7.5l1.7-5.3H6.1"></path><circle cx="8.1" cy="14.8" r="1.1"></circle><circle cx="13.7" cy="14.8" r="1.1"></circle></svg>';
+}
+
+function listLayoutIconMarkup() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(3 5.727)"><path d="M4.364 1.091h13.091"></path><circle cx="1.091" cy="1.091" r="1.091" fill="currentColor"></circle></g><g transform="translate(3 10.91)"><path d="M4.364 1.091h13.091"></path><circle cx="1.091" cy="1.091" r="1.091" fill="currentColor"></circle></g><g transform="translate(3 16.09)"><path d="M4.364 1.091h13.091"></path><circle cx="1.091" cy="1.091" r="1.091" fill="currentColor"></circle></g></svg>';
+}
+
+function gridLayoutIconMarkup() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"></path></svg>';
+}
+
+function languageSwitcherMarkup(mode = 'desktop') {
+  const option = languageOptions[currentLanguage] || languageOptions.en;
+  return `
+    <div class="language-switcher-shell language-switcher-shell-${mode}${isLanguageMenuOpen ? ' is-open' : ''}">
+      <button class="header-language-pill header-language-pill-${mode}" type="button" data-language-toggle="true" aria-expanded="${isLanguageMenuOpen ? 'true' : 'false'}" aria-label="${t('change_language')}">
+        <div class="tl-select">
+          <img class="tl-flag" loading="lazy" width="20" height="18" alt="Language switcher country flag for ${option.name}" src="${languageFlagDataUrl(currentLanguage)}">
+          <span class="tl-label tl-name">${option.name}</span>
+        </div>
+      </button>
+      ${isLanguageMenuOpen ? `<div class="language-switcher-menu">${Object.entries(languageOptions).map(([language, meta]) => `<button class="language-option${language === currentLanguage ? ' is-active' : ''}" type="button" data-language-option="${language}"><div class="tl-select"><img class="tl-flag" loading="lazy" width="20" height="18" alt="Language switcher country flag for ${meta.name}" src="${languageFlagDataUrl(language)}"><span class="tl-label tl-name">${meta.name}</span></div></button>`).join('')}</div>` : ''}
+    </div>
+  `;
+}
 function accountUtilityMarkup() {
   if (!authState.isLoggedIn) {
     return `
       <button class="header-utility-button header-account-button" type="button" data-login-link="true">
         <span class="header-account-icon">${userIconMarkup()}</span>
         <span class="header-account-copy">
-          <strong>Login</strong>
-          <span>Sign in</span>
+          <strong>${t('login')}</strong>
+          <span>${t('sign_in')}</span>
         </span>
       </button>
     `;
@@ -1465,16 +1616,16 @@ function accountUtilityMarkup() {
       <button class="header-utility-button header-account-button is-account" type="button" data-account-toggle="true" aria-expanded="${isAccountMenuOpen ? 'true' : 'false'}">
         <span class="header-account-icon">${userIconMarkup()}</span>
         <span class="header-account-copy">
-          <strong>My Account</strong>
-          <span>${authState.name || 'Member'}</span>
+          <strong>${t('my_account')}</strong>
+          <span>${authState.name || t('member')}</span>
         </span>
       </button>
       ${isAccountMenuOpen ? `
         <div class="account-dropdown">
-          <button class="account-dropdown-link" type="button" data-account-action="orders">My Orders</button>
-          <button class="account-dropdown-link" type="button" data-account-action="points">My Points</button>
-          <button class="account-dropdown-link" type="button" data-account-action="profile">Profile</button>
-          <button class="account-dropdown-link is-logout" type="button" data-account-action="logout">Logout</button>
+          <button class="account-dropdown-link" type="button" data-account-action="orders">${t('my_orders')}</button>
+          <button class="account-dropdown-link" type="button" data-account-action="points">${t('my_points')}</button>
+          <button class="account-dropdown-link" type="button" data-account-action="profile">${t('profile')}</button>
+          <button class="account-dropdown-link is-logout" type="button" data-account-action="logout">${t('logout')}</button>
         </div>
       ` : ''}
     </div>
@@ -1560,11 +1711,11 @@ function categoryDropdownMarkup() {
               (category) => `
                 <div class="category-dropdown-item">
                   <button class="category-dropdown-link" type="button">
-                    <strong>${category.label}</strong>
+                    <strong>${translatedCategoryLabel(category.id, category.label)}</strong>
                     <span class="category-dropdown-arrow">›</span>
                   </button>
                   <div class="category-submenu">
-                    <p class="category-submenu-title">${category.label}</p>
+                    <p class="category-submenu-title">${translatedCategoryLabel(category.id, category.label)}</p>
                     <div class="category-submenu-list">
                       ${category.children.map((child) => `<button class="category-submenu-link" type="button">${child}</button>`).join("")}
                     </div>
@@ -1579,48 +1730,119 @@ function categoryDropdownMarkup() {
   `;
 }
 
-function topChrome() {
+function activeMobileCategory() {
+  return marketplaceCategories.find((category) => category.id === activeMobileCategoryId) || null;
+}
+
+function mobileCategoryDrawerMarkup() {
+  const category = activeMobileCategory();
+  const title = category ? translatedCategoryLabel(category.id, category.label) : t('categories_menu');
+  const body = category
+    ? `
+        <div class="mobile-category-drawer-list">
+          <button class="mobile-category-drawer-shopall" type="button" data-home-filter="${category.id}">
+            <span>${t('shop_all_in')}</span>
+            <strong>${translatedCategoryLabel(category.id, category.label)}</strong>
+          </button>
+          ${category.children.map((child) => `
+            <button class="mobile-category-drawer-link is-leaf" type="button" data-home-filter="${category.id}">
+              <span>${child}</span>
+            </button>
+          `).join('')}
+        </div>
+      `
+    : `
+        <div class="mobile-category-drawer-list">
+          ${marketplaceCategories.map((item) => `
+            <button class="mobile-category-drawer-link" type="button" data-mobile-category-open="${item.id}">
+              <span class="mobile-category-drawer-copy">
+                <strong>${translatedCategoryLabel(item.id, item.label)}</strong>
+              </span>
+              <span class="mobile-category-drawer-arrow" aria-hidden="true">›</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+
   return `
-    <div class="announcement-bar">
-      <div class="announcement-inner">
-        <span class="announcement-label">Notice</span>
-        <p class="announcement-text">${announcementItems.join("  ·  ")}</p>
-        <button class="announcement-link" type="button">KakaoTalk Community</button>
+    <div class="mobile-category-drawer${isMobileCategoryMenuOpen ? ' is-open' : ''}" aria-hidden="${isMobileCategoryMenuOpen ? 'false' : 'true'}">
+      <button class="mobile-category-drawer-scrim" type="button" data-mobile-category-close="true" aria-label="${t('menu_close')}"></button>
+      <aside class="mobile-category-drawer-panel" aria-label="${t('categories_menu')}">
+        <div class="mobile-category-drawer-header">
+          ${category
+            ? `<button class="mobile-category-drawer-back" type="button" data-mobile-category-back="true">${t('menu_back')}</button>`
+            : `<span class="mobile-category-drawer-spacer" aria-hidden="true"></span>`}
+          <strong>${title}</strong>
+          <button class="mobile-category-drawer-close" type="button" data-mobile-category-close="true" aria-label="${t('menu_close')}">×</button>
+        </div>
+        ${body}
+      </aside>
+    </div>
+  `;
+}
+
+function topChrome() {
+  const showAnnouncementBar = !activeHomeSectionFilter;
+  return `
+    <div class="header-main header-main-marketlike">
+      <div class="header-desktop-row">
+        <button class="header-logo-button header-logo-button-centered" type="button" data-home-link="true">
+          <img class="header-logo-image" src="./assets/Seoul-Basket-Logo-header-captured.png" alt="Seoul Basket Korean marketplace logo" />
+        </button>
+        <div class="header-search-shell header-search-shell-marketlike">
+          <input class="header-search-input" type="search" placeholder="${t('search_placeholder')}" />
+          <button class="header-search-button" type="button" aria-label="${t('search_aria')}"><span class="header-search-icon">${searchIconMarkup()}</span></button>
+        </div>
+        <div class="header-desktop-actions">
+          ${accountUtilityMarkup()}
+          <button class="cart-utility cart-utility-desktop" type="button" data-cart-link="true"><span class="cart-utility-icon">${cartIconMarkup()}</span><span class="cart-utility-label">${t('cart')}</span><strong>${cartItemCount()}</strong></button>
+          ${languageSwitcherMarkup('desktop')}
+        </div>
+      </div>
+      <div class="header-mobile-row">
+        <button class="category-trigger header-menu-trigger" type="button" data-category-toggle="true" aria-expanded="${isMobileCategoryMenuOpen ? 'true' : 'false'}"><span class="category-trigger-icon" aria-hidden="true"><span></span><span></span><span></span></span><span class="header-menu-text">${t('menu')}</span></button>
+        <button class="header-logo-button header-logo-button-centered" type="button" data-home-link="true">
+          <img class="header-logo-image" src="./assets/Seoul-Basket-Logo-header-captured.png" alt="Seoul Basket Korean marketplace logo" />
+        </button>
+        <div class="header-mobile-actions">
+          ${accountUtilityMarkup()}
+          <button class="cart-utility" type="button" data-cart-link="true"><span class="cart-utility-icon">${cartIconMarkup()}</span><span class="cart-utility-label">${t('cart')}</span><strong>${cartItemCount()}</strong></button>
+          ${languageSwitcherMarkup('mobile')}
+        </div>
+      </div>
+      <div class="header-search-shell header-search-shell-marketlike header-search-shell-mobile">
+        <input class="header-search-input" type="search" placeholder="${t('search_placeholder')}" />
+        <button class="header-search-button" type="button" aria-label="${t('search_aria')}"><span class="header-search-icon">${searchIconMarkup()}</span></button>
       </div>
     </div>
+    ${mobileCategoryDrawerMarkup()}
 
-    <div class="header-main">
-      <button class="header-logo-button" type="button" data-home-link="true">
-        <img class="header-logo-image" src="./assets/Seoul-Basket-Logo-header-captured.png" alt="Seoul Basket Korean marketplace logo" />
-      </button>
-      <div class="header-search-shell">
-        <input class="header-search-input" type="search" placeholder="Search kimchi, banchan, meal kits, fruit trays..." />
-        <button class="header-search-button" type="button">Search</button>
+    ${showAnnouncementBar ? `
+      <div class="announcement-bar">
+        <div class="announcement-inner announcement-inner-compact">
+          <span class="announcement-label">${t('notice')}</span>
+          <div class="announcement-ticker" aria-label="${t('notice')}">
+            <div class="announcement-track">
+              <span class="announcement-text">${t('notice_text')}</span>
+              <span class="announcement-text" aria-hidden="true">${t('notice_text')}</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="header-utility">
-        ${accountUtilityMarkup()}
-        <button class="cart-utility" type="button" data-cart-link="true"><span class="cart-utility-label">Cart</span><strong>${cartItemCount()}</strong></button>
-      </div>
-    </div>
+    ` : ''}
 
-    <div class="nav-strip-inner">
-      <div class="category-nav-shell">
-        <button class="category-trigger" type="button"><span class="category-trigger-icon" aria-hidden="true"><span></span><span></span><span></span></span><span>All Categories</span></button>
+    <div class="nav-strip-inner nav-strip-compact">
+      <div class="category-nav-shell${isMobileCategoryMenuOpen ? ' is-open' : ''}">
         ${categoryDropdownMarkup()}
       </div>
       <nav class="market-nav" aria-label="Marketplace sections">
-        <a class="market-nav-link is-active" href="#top">Home</a>
-        <a class="market-nav-link" href="#quick-categories">Categories</a>
-        <a class="market-nav-link" href="#section-new-arrivals">New Arrivals</a>
-        <a class="market-nav-link" href="#section-time-deals">Time Deals</a>
-        <a class="market-nav-link" href="#section-best-sellers">Best Sellers</a>
-        <a class="market-nav-link" href="#section-brand-hall">Brand Hall</a>
+        <a class="market-nav-link is-active" href="#top" data-home-nav-link="true">${t('nav_home')}</a>
+        <a class="market-nav-link" href="#quick-categories">${t('nav_categories')}</a>
+        <a class="market-nav-link" href="#section-new-arrivals">${t('nav_new_arrivals')}</a>
+        <a class="market-nav-link" href="#section-time-deals">${t('nav_time_deals')}</a>
+        <a class="market-nav-link" href="#section-best-sellers">${t('nav_best_sellers')}</a>
+        <a class="market-nav-link" href="#section-brand-hall">${t('nav_brand_hall')}</a>
       </nav>
-    </div>
-
-    <div class="delivery-line-inner">
-      <span class="delivery-pill">Delivery Notice</span>
-      <p>Calgary / Airdrie / Cochrane delivery available this week · Orders over CA$100 unlock free delivery · Same-day seller updates posted every morning</p>
     </div>
   `;
 }
@@ -1735,19 +1957,18 @@ function productCard(product, options = {}) {
         <strong class="market-product-media-title">${product.image}</strong>
         <span class="market-product-media-note">${product.delivery}</span>
       </div>
-      <p class="market-product-seller">${product.seller}</p>
       <h3 class="market-product-name">${product.name}</h3>
-      <p class="market-product-description">${product.description}</p>
-      <div class="market-product-meta">
-        <span>${ratingStars(product.rating)}</span>
-        <span>${product.reviews} reviews</span>
-      </div>
-      <div class="market-product-footer">
-        <div class="market-product-price-stack">
-          <strong class="market-product-price">${money(product.price)}</strong>
-          ${product.compareAtPrice ? `<span class="market-product-compare-price">${money(product.compareAtPrice)}</span>` : ''}
+      <div class="market-product-footer market-product-footer-compact">
+        <div class="market-product-price-row${product.compareAtPrice ? "" : " is-single"}">
+          ${product.compareAtPrice ? `<span class="market-product-original-price">${money(product.compareAtPrice)}</span>` : `<span class="market-product-original-price is-current">${money(product.price)}</span>`}
+          ${product.compareAtPrice ? `<strong class="market-product-sale-price">${money(product.price)}</strong>` : ''}
         </div>
-        <button class="button-secondary market-product-action" type="button" data-product-id="${product.id}" ${options.forceReload ? 'data-product-reload="true"' : ''}>View</button>
+        <button class="button-primary market-product-action market-product-action-mobile-add" type="button" data-card-add-to-cart="${product.id}">Add to cart</button>
+        <button class="button-secondary market-product-action market-product-action-single" type="button" data-product-id="${product.id}" ${options.forceReload ? 'data-product-reload="true"' : ''}>View</button>
+        <div class="market-product-actions-dual">
+          <button class="button-primary market-product-action market-product-action-add" type="button" data-card-add-to-cart="${product.id}">Add to cart</button>
+          <button class="button-secondary market-product-action market-product-action-detail" type="button" data-product-id="${product.id}" ${options.forceReload ? 'data-product-reload="true"' : ''}>View details</button>
+        </div>
       </div>
     </article>
   `;
@@ -1776,15 +1997,15 @@ function quickMenuMarkup() {
     <section class="home-section quick-menu-section" id="quick-categories">
       <div class="section-header-row">
         <div class="section-header-copy">
-          <p class="section-kicker">Quick categories</p>
-          <h2 class="section-title">Shop by category</h2>
+          <p class="section-kicker">${t('quick_categories')}</p>
+          <h2 class="section-title">${t('shop_by_category')}</h2>
         </div>
       </div>
-      <div class="quick-menu-grid">
-        ${quickCategories.map((category) => `
-          <button class="quick-category-button is-${category.tone}" type="button">
-            <span class="quick-category-thumb">${category.shortLabel}</span>
-            <span class="quick-category-label">${category.label}</span>
+      <div class="quick-menu-grid quick-menu-rail">
+        ${quickCategories.slice(0, 8).map((category) => `
+          <button class="quick-category-button is-${category.tone}" type="button" data-home-filter="${category.id}">
+            <span class="quick-category-thumb">${translatedCategoryLabel(category.id, category.shortLabel)}</span>
+            <span class="quick-category-label">${translatedCategoryLabel(category.id, category.label)}</span>
           </button>
         `).join('')}
       </div>
@@ -1792,17 +2013,73 @@ function quickMenuMarkup() {
   `;
 }
 
+function homeFilterProducts(key) {
+  if (sectionProducts[key]) return sectionProducts[key];
+  return quickCategoryProducts[key] || [];
+}
+
+function homeFilterMeta(key) {
+  const sectionMeta = {
+    featured: { eyebrow: t('featured_eyebrow'), title: t('featured_title') },
+    best: { eyebrow: t('best_eyebrow'), title: t('best_title') },
+    new: { eyebrow: t('new_eyebrow'), title: t('new_title') },
+    deals: { eyebrow: t('deals_eyebrow'), title: t('deals_title') },
+  };
+  if (sectionMeta[key]) return sectionMeta[key];
+  if (quickCategoryProducts[key]) {
+    return {
+      eyebrow: t('quick_category_eyebrow'),
+      title: translatedCategoryLabel(key, quickCategoryFilterMeta[key]?.title || key),
+    };
+  }
+  return { eyebrow: t('quick_category_eyebrow'), title: t('filtered_products_suffix') };
+}
+
+function sectionSlugForKey(key) {
+  if (key === 'featured') return 'vans-pick';
+  if (key === 'best') return 'best-sellers';
+  if (key === 'new') return 'new-arrivals';
+  return 'time-deals';
+}
+
 function sectionMarkup(key, eyebrow, title) {
   return `
-    <section class="home-section" id="section-${key === 'featured' ? 'vans-pick' : key === 'best' ? 'best-sellers' : key === 'new' ? 'new-arrivals' : 'time-deals'}">
-      <div class="section-header-row">
+    <section class="home-section home-product-section" id="section-${sectionSlugForKey(key)}">
+      <div class="section-header-row section-header-row-actionable">
         <div class="section-header-copy">
           <p class="section-kicker">${eyebrow}</p>
           <h2 class="section-title">${title}</h2>
         </div>
+        <button class="button-secondary section-view-all-button" type="button" data-home-filter="${key}">${t('view_all_product')}</button>
       </div>
-      <div class="market-product-grid">
-        ${sectionProducts[key].map((id) => productCard(productById(id))).join('')}
+      <div class="market-product-grid market-product-rail product-card-rail">
+        ${homeFilterProducts(key).map((id) => productCard(productById(id))).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function filteredSectionMarkup(key) {
+  const layout = activeHomeProductLayout === 'list' ? 'list' : 'grid';
+  const section = homeFilterMeta(key);
+  return `
+    <section class="home-section home-product-section home-product-section-filtered" id="section-filtered-products">
+      <div class="section-header-row section-header-row-actionable section-header-row-filtered">
+        <div class="section-header-copy">
+          <p class="section-kicker">${section.eyebrow}</p>
+          <h2 class="section-title">${section.title} ${t('filtered_products_suffix')}</h2>
+        </div>
+        <button class="button-secondary section-view-all-button section-view-all-button-clear" type="button" data-home-filter-clear="true">${t('show_all_sections')}</button>
+      </div>
+      <div class="products-toolbar products-toolbar-filtered" id="products-toolbar">
+        <div class="products-toolbar__layout" role="group" aria-label="View as">
+          <span class="products-toolbar__label">${t('view_as')}</span>
+          <button class="products-layout-toggle${layout === 'list' ? ' is-active' : ''}" type="button" data-home-layout="list" aria-pressed="${layout === 'list' ? 'true' : 'false'}" aria-label="${t('list_view')}">${listLayoutIconMarkup()}</button>
+          <button class="products-layout-toggle${layout === 'grid' ? ' is-active' : ''}" type="button" data-home-layout="grid" aria-pressed="${layout === 'grid' ? 'true' : 'false'}" aria-label="${t('grid_view')}">${gridLayoutIconMarkup()}</button>
+        </div>
+      </div>
+      <div class="market-product-grid market-product-grid-filtered is-${layout}">
+        ${homeFilterProducts(key).map((id) => productCard(productById(id))).join('')}
       </div>
     </section>
   `;
@@ -1812,12 +2089,12 @@ function promoBannerMarkup() {
   return `
     <section class="promo-banner">
       <div class="promo-banner-text">
-        <p class="section-kicker">Community perks</p>
-        <h2 class="section-title">Join KakaoTalk updates and member rewards</h2>
-        <p>Get weekly flyer updates, delivery route notices, and seller-only bonus point events for Calgary shoppers.</p>
+        <p class="section-kicker">${t('community_perks')}</p>
+        <h2 class="section-title">${t('join_rewards_title')}</h2>
+        <p>${t('join_rewards_copy')}</p>
         <div class="promo-banner-actions">
-          <button class="button-primary" type="button">Join Community</button>
-          <button class="button-secondary" type="button">See Rewards</button>
+          <button class="button-primary" type="button">${t('join_community')}</button>
+          <button class="button-secondary" type="button">${t('see_rewards')}</button>
         </div>
       </div>
       <div class="promo-qr-card">
@@ -1834,8 +2111,8 @@ function brandHallMarkup() {
     <section class="home-section brand-hall-section" id="section-brand-hall">
       <div class="section-header-row">
         <div class="section-header-copy">
-          <p class="section-kicker">Brand hall</p>
-          <h2 class="section-title">Trusted Calgary sellers</h2>
+          <p class="section-kicker">${t('brand_hall')}</p>
+          <h2 class="section-title">${t('trusted_sellers')}</h2>
         </div>
       </div>
       <div class="brand-hall-grid">
@@ -1845,59 +2122,346 @@ function brandHallMarkup() {
             <p>${brand.focus}</p>
             <span class="brand-hall-eta">${brand.eta}</span>
           </article>
-        `).join('')}
+        `).join("")}
+      </div>
+      <div class="brand-hall-footer">
+        <button class="button-secondary back-to-top-button" type="button" data-home-link="true">${t('back_to_top')}</button>
       </div>
     </section>
   `;
 }
 
+function footerContent() {
+  if (currentLanguage === 'ko') {
+    return {
+      brand_title: 'Seoul Basket',
+      brand_copy: 'Alberta 지역을 위한 한국 식품 마켓',
+      service_area_label: '서비스 지역',
+      service_area_value: 'Calgary / Airdrie / Cochrane',
+      currency_note: '모든 가격은 별도 표기 없는 한 CAD 기준입니다.',
+      support: '고객지원',
+      company: '연락처 정보',
+      community: '커뮤니티',
+      shipping: '배송안내',
+      returns: '교환 / 환불 / 취소 정책',
+      privacy: '개인정보 처리방침',
+      terms: '이용약관',
+      faq: '자주 묻는 질문',
+      contact: '문의하기',
+      contact_hours: '문의 가능 시간: Mon - Fri : 8AM - 5PM',
+      legal_name: '법인명',
+      operating_as: '운영 상호명',
+      address: '주소',
+      phone: '전화',
+      email: '이메일',
+      hours: '운영시간',
+      privacy_contact: '개인정보 문의',
+      coming_soon: '추후 공개',
+      kakao: '카카오톡 채널',
+      instagram: '인스타그램',
+      language: '언어',
+      shipping_title: '배송안내',
+      shipping_body: 'Seoul Basket는 Alberta 지역 일부 구역을 대상으로 배송 서비스를 제공합니다.',
+      shipping_zone_title: '배송 가능 지역',
+      shipping_zone_body: 'Calgary / Airdrie / Cochrane',
+      shipping_cutoff_title: '주문 마감',
+      shipping_cutoff_body: '주문 마감 시간은 상품 준비 상황 및 배송 일정에 따라 달라질 수 있으며, 상세 일정은 주문 시 안내됩니다.',
+      shipping_fee_title: '배송비',
+      shipping_fee_body: '배송비는 주문 금액, 배송지, 프로모션 적용 여부에 따라 달라질 수 있습니다. 최종 배송비는 결제 전 단계에서 확인할 수 있습니다.',
+      shipping_eta_title: '예상 배송일',
+      shipping_eta_body: '예상 배송일은 주문 시점, 상품 재고, 배송 지역에 따라 달라질 수 있습니다. 예상 배송일 또는 배송 가능 일정은 결제 전 안내됩니다.',
+      shipping_note_title: '유의사항',
+      shipping_note_body: '신선식품 및 냉장/냉동 상품은 배송 지역 및 운영 일정에 따라 주문이 제한될 수 있습니다.',
+      returns_title: '교환 / 환불 / 취소 정책',
+      returns_cancel_title: '주문 취소',
+      returns_cancel_body: '주문 취소는 상품 준비 또는 배송 시작 전까지만 가능할 수 있습니다. 취소 가능 여부는 주문 상태에 따라 달라집니다.',
+      returns_refund_title: '교환 및 환불',
+      returns_refund_body: '상품 이상, 오배송, 누락 등의 문제가 있는 경우 고객센터로 문의해 주세요. 확인 후 환불 또는 적절한 조치를 안내드립니다.',
+      returns_fresh_title: '신선식품 특성',
+      returns_fresh_body: '신선식품, 냉장/냉동 상품 등은 상품 특성상 단순 변심에 의한 교환 또는 환불이 제한될 수 있습니다.',
+      returns_contact_title: '문의',
+      returns_contact_body: '환불 및 교환 문의: info@seoulbasket.ca',
+      privacy_title: '개인정보 처리방침',
+      privacy_body: 'Seoul Basket는 주문 처리, 고객 응대, 배송 안내, 서비스 운영을 위해 필요한 범위 내에서 개인정보를 수집 및 이용합니다.',
+      privacy_collect_title: '수집 항목',
+      privacy_collect_body: '이름, 연락처, 이메일 주소, 배송지 주소, 주문 정보, 결제 관련 정보(필요 시)',
+      privacy_use_title: '이용 목적',
+      privacy_use_body: '주문 처리, 배송 안내, 고객지원, 서비스 개선, 법적 의무 이행',
+      privacy_store_title: '보관 및 보호',
+      privacy_store_body: '회사는 관련 법령 및 내부 정책에 따라 개인정보를 보호합니다.',
+      privacy_contact_body: 'Privacy Contact: privacy@seoulbasket.ca',
+      terms_title: '이용약관',
+      terms_body: '본 사이트를 이용함으로써 이용자는 Seoul Basket의 서비스 이용 조건에 동의한 것으로 간주됩니다.',
+      terms_points_title: '주요 내용',
+      terms_points_body: '상품 정보 및 가격은 변경될 수 있습니다. 주문 접수 후 재고 또는 운영 사정에 따라 주문이 조정될 수 있습니다. 배송 가능 지역 및 일정은 회사 운영 정책에 따릅니다. 환불 및 취소는 별도 정책에 따릅니다.',
+      terms_currency_title: '통화',
+      terms_currency_body: '별도 고지 없는 한 모든 가격은 CAD 기준입니다.',
+      faq_title: '자주 묻는 질문',
+      faq_q1: 'Q. 어디까지 배송되나요?',
+      faq_a1: 'A. 현재 Calgary / Airdrie / Cochrane 지역을 중심으로 운영합니다.',
+      faq_q2: 'Q. 배송비는 얼마인가요?',
+      faq_a2: 'A. 배송비는 주문 금액 및 배송 지역에 따라 달라지며 결제 전 확인 가능합니다.',
+      faq_q3: 'Q. 환불은 어떻게 요청하나요?',
+      faq_a3: 'A. 상품 이상 또는 주문 문제가 있는 경우 고객센터로 문의해 주세요.',
+      faq_q4: 'Q. 운영시간은 어떻게 되나요?',
+      faq_a4: 'A. Mon-Fri 9:00 AM - 6:00 PM MST 입니다.',
+      contact_title: '문의하기',
+      customer_support: '고객지원',
+      copyright: '© 2026 Seoul Basket. All rights reserved.',
+    };
+  }
+
+  return {
+    brand_title: 'Seoul Basket',
+    brand_copy: 'Korean grocery market for Alberta shoppers.',
+    service_area_label: 'Service Area',
+    service_area_value: 'Calgary / Airdrie / Cochrane',
+    currency_note: 'All prices are shown in CAD unless otherwise stated.',
+    support: 'Support',
+    company: 'Contact Information',
+    community: 'Community',
+    shipping: 'Shipping Policy',
+    returns: 'Returns & Refunds',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    faq: 'FAQ',
+    contact: 'Contact',
+    contact_hours: 'Support hours: Mon - Fri : 8AM - 5PM',
+    legal_name: 'Legal Business Name',
+    operating_as: 'Operating As',
+    address: 'Address',
+    phone: 'Phone',
+    email: 'Email',
+    hours: 'Customer Service Hours',
+    privacy_contact: 'Privacy Contact',
+    coming_soon: 'Coming Soon',
+    kakao: 'KakaoTalk Channel',
+    instagram: 'Instagram',
+    language: 'Language',
+    shipping_title: 'Shipping Policy',
+    shipping_body: 'Seoul Basket provides delivery service to selected Alberta delivery zones.',
+    shipping_zone_title: 'Delivery Zones',
+    shipping_zone_body: 'Calgary / Airdrie / Cochrane',
+    shipping_cutoff_title: 'Order Cutoff',
+    shipping_cutoff_body: 'Order cutoff times may vary depending on product preparation and route scheduling. Details are shown during checkout.',
+    shipping_fee_title: 'Delivery Fees',
+    shipping_fee_body: 'Delivery fees may vary based on order value, address, and active promotions. The final fee is shown before payment.',
+    shipping_eta_title: 'Estimated Delivery',
+    shipping_eta_body: 'Estimated delivery dates depend on order timing, stock status, and route availability. Delivery timing is shown before checkout is completed.',
+    shipping_note_title: 'Important Notes',
+    shipping_note_body: 'Fresh, refrigerated, and frozen items may have route-based ordering limits.',
+    returns_title: 'Returns & Refunds',
+    returns_cancel_title: 'Order Cancellation',
+    returns_cancel_body: 'Order cancellation may be available only before packing or dispatch begins. Availability depends on order status.',
+    returns_refund_title: 'Returns and Refunds',
+    returns_refund_body: 'If there is a product issue, wrong item, or missing item, please contact customer support. We will review and advise on refund or resolution options.',
+    returns_fresh_title: 'Perishable Items',
+    returns_fresh_body: 'Fresh, chilled, and frozen products may not be eligible for returns or refunds due to change of mind.',
+    returns_contact_title: 'Support Contact',
+    returns_contact_body: 'Returns and refund inquiries: info@seoulbasket.ca',
+    privacy_title: 'Privacy Policy',
+    privacy_body: 'Seoul Basket collects and uses personal information only as needed to process orders, provide support, arrange delivery, and operate the service.',
+    privacy_collect_title: 'Information We Collect',
+    privacy_collect_body: 'Name, contact details, email address, delivery address, order details, and payment-related information where required.',
+    privacy_use_title: 'How We Use It',
+    privacy_use_body: 'Order processing, delivery updates, customer support, service improvement, and legal compliance.',
+    privacy_store_title: 'Protection and Retention',
+    privacy_store_body: 'We protect personal information in accordance with applicable laws and internal policies.',
+    privacy_contact_body: 'Privacy Contact: privacy@seoulbasket.ca',
+    terms_title: 'Terms of Service',
+    terms_body: 'By using this site, you agree to the service conditions of Seoul Basket.',
+    terms_points_title: 'Key Terms',
+    terms_points_body: 'Product details and prices may change. Orders may be adjusted due to stock or operational constraints. Delivery areas and schedules follow our operating policies. Refunds and cancellations are governed by our posted policies.',
+    terms_currency_title: 'Currency',
+    terms_currency_body: 'Unless otherwise stated, all prices are in CAD.',
+    faq_title: 'FAQ',
+    faq_q1: 'Q. Where do you deliver?',
+    faq_a1: 'A. We currently serve Calgary, Airdrie, Cochrane, and selected nearby Alberta delivery zones.',
+    faq_q2: 'Q. How much is delivery?',
+    faq_a2: 'A. Delivery fees vary by order value and delivery area, and are shown before checkout.',
+    faq_q3: 'Q. How do I request a refund?',
+    faq_a3: 'A. Please contact customer support if there is a problem with your order or item.',
+    faq_q4: 'Q. What are your support hours?',
+    faq_a4: 'A. Mon-Fri 9:00 AM - 6:00 PM MST.',
+    contact_title: 'Contact',
+    customer_support: 'Customer Support',
+    copyright: '© 2026 Seoul Basket. All rights reserved.',
+  };
+}
+
+function policyRoute(policy) {
+  return `#policy-${policy}`;
+}
+
+function policyPageContent(policy) {
+  const copy = footerContent();
+  const map = {
+    shipping: {
+      kicker: copy.support,
+      title: copy.shipping_title,
+      intro: copy.shipping_body,
+      sections: [
+        { title: copy.shipping_zone_title, body: copy.shipping_zone_body },
+        { title: copy.shipping_cutoff_title, body: copy.shipping_cutoff_body },
+        { title: copy.shipping_fee_title, body: copy.shipping_fee_body },
+        { title: copy.shipping_eta_title, body: copy.shipping_eta_body },
+        { title: copy.shipping_note_title, body: copy.shipping_note_body },
+      ],
+    },
+    returns: {
+      kicker: copy.support,
+      title: copy.returns_title,
+      intro: '',
+      sections: [
+        { title: copy.returns_cancel_title, body: copy.returns_cancel_body },
+        { title: copy.returns_refund_title, body: copy.returns_refund_body },
+        { title: copy.returns_fresh_title, body: copy.returns_fresh_body },
+        { title: copy.returns_contact_title, body: copy.returns_contact_body },
+      ],
+    },
+    privacy: {
+      kicker: copy.support,
+      title: copy.privacy_title,
+      intro: copy.privacy_body,
+      sections: [
+        { title: copy.privacy_collect_title, body: copy.privacy_collect_body },
+        { title: copy.privacy_use_title, body: copy.privacy_use_body },
+        { title: copy.privacy_store_title, body: copy.privacy_store_body },
+        { title: copy.privacy_contact, body: copy.privacy_contact_body },
+      ],
+    },
+    terms: {
+      kicker: copy.support,
+      title: copy.terms_title,
+      intro: copy.terms_body,
+      sections: [
+        { title: copy.terms_points_title, body: copy.terms_points_body },
+        { title: copy.terms_currency_title, body: copy.terms_currency_body },
+      ],
+    },
+    faq: {
+      kicker: copy.support,
+      title: copy.faq_title,
+      intro: '',
+      sections: [
+        { title: copy.faq_q1, body: copy.faq_a1 },
+        { title: copy.faq_q2, body: copy.faq_a2 },
+        { title: copy.faq_q3, body: copy.faq_a3 },
+        { title: copy.faq_q4, body: copy.faq_a4 },
+      ],
+    },
+    contact: {
+      kicker: copy.community,
+      title: copy.contact_title,
+      intro: '',
+      sections: [
+        { title: copy.customer_support, body: 'Email: info@seoulbasket.ca\nPhone: 1-800-0000-0000\nHours: Mon-Fri 9:00 AM - 6:00 PM MST' },
+        { title: copy.privacy_contact, body: 'Email: privacy@seoulbasket.ca' },
+        { title: copy.kakao, body: copy.coming_soon },
+        { title: copy.instagram, body: copy.coming_soon },
+      ],
+    },
+  };
+  return map[policy] || map.shipping;
+}
+
 function footerMarkup() {
+  const copy = footerContent();
   return `
     <footer class="footer-preview">
-      <div class="footer-brand">
-        <p class="section-kicker">Seoul Basket</p>
-        <h3>Korean grocery and lifestyle marketplace for Calgary</h3>
-        <p>Order weekly Korean groceries, prepared meals, pantry staples, and trusted local delivery picks in one place.</p>
+      <div class="footer-brand footer-brand-final">
+        <h3>${copy.brand_title}</h3>
+        <p>${copy.brand_copy}</p>
+        <div class="footer-brand-meta">
+          <span>${copy.service_area_value}</span>
+          <span>${copy.currency_note}</span>
+        </div>
       </div>
-      <div class="footer-columns">
+      <div class="footer-columns footer-columns-final">
         <div>
-          <strong>Shop</strong>
-          <a href="#quick-categories">Categories</a>
-          <a href="#section-best-sellers">Best Sellers</a>
-          <a href="#section-new-arrivals">New Arrivals</a>
+          <strong>${copy.support}</strong>
+          <a href="${policyRoute('shipping')}">${copy.shipping}</a>
+          <a href="${policyRoute('returns')}">${copy.returns}</a>
+          <a href="${policyRoute('privacy')}">${copy.privacy}</a>
+          <a href="${policyRoute('contact')}">${copy.contact}</a>
         </div>
         <div>
-          <strong>Support</strong>
-          <a href="#">Delivery notice</a>
-          <a href="#">Customer care</a>
-          <a href="#">Order help</a>
+          <strong>${copy.company}</strong>
+          <span>17 Auburn Meadows Link SE, Calgary AB, T3M 2E6, Canada</span>
+          <span>T. 1-800-0000-0000</span>
+          <span>info@seoulbasket.ca</span>
+          <span>${copy.contact_hours}</span>
         </div>
-        <div>
-          <strong>Follow</strong>
-          <a href="#">Instagram</a>
-          <a href="#">KakaoTalk</a>
-          <a href="#">Community</a>
-        </div>
+      </div>
+      <div class="footer-bottom-bar">
+        <span>${copy.copyright}</span>
       </div>
     </footer>
   `;
 }
 
+function policyPageMarkup(policy) {
+  const copy = footerContent();
+  const page = policyPageContent(policy);
+  return `
+    <div class="page-shell">
+      <div class="market-shell" id="top">
+        ${loginTopChrome()}
+        <main class="content-shell content-shell-login">
+          <section class="login-centered-shell policy-centered-shell">
+            <article class="login-card policy-card-shell">
+              <div class="auth-card-header auth-card-header-center">
+                <p class="section-kicker">${page.kicker}</p>
+                <h2>${page.title}</h2>
+                ${page.intro ? `<p class="auth-subcopy">${page.intro}</p>` : ''}
+              </div>
+              <div class="policy-section-list">
+                ${page.sections.map((section) => `
+                  <section class="policy-section-block">
+                    <strong>${section.title}</strong>
+                    ${String(section.body).split('\n').map((line) => `<p>${line}</p>`).join('')}
+                  </section>
+                `).join('')}
+              </div>
+              <div class="policy-page-backlinks">
+                <button class="button-secondary" type="button" data-home-link="true">${currentLanguage === 'ko' ? '홈으로' : 'Back Home'}</button>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  `;
+}
+
 function homeMarkup() {
+  const isFilteredHomeView = Boolean(activeHomeSectionFilter);
+  const filteredSection = isFilteredHomeView
+    ? filteredSectionMarkup(activeHomeSectionFilter)
+    : [
+        sectionMarkup('featured', t('featured_eyebrow'), t('featured_title')),
+        sectionMarkup('best', t('best_eyebrow'), t('best_title')),
+        sectionMarkup('new', t('new_eyebrow'), t('new_title')),
+        sectionMarkup('deals', t('deals_eyebrow'), t('deals_title')),
+      ].join('');
+
+  const homePrimaryContent = isFilteredHomeView
+    ? filteredSection
+    : [
+        heroMarkup(),
+        quickMenuMarkup(),
+        filteredSection,
+        brandHallMarkup(),
+        promoBannerMarkup(),
+      ].join('');
+
   return `
     <div class="page-shell">
       <div class="market-shell" id="top">
         ${topChrome()}
         <main class="content-shell">
-          <div class="home-stack">
-            ${heroMarkup()}
-            ${quickMenuMarkup()}
-            ${sectionMarkup('featured', "Van's Pick", "Van's Pick")}
-            ${promoBannerMarkup()}
-            ${sectionMarkup('best', 'Best sellers', 'Best Sellers')}
-            ${sectionMarkup('new', 'New arrivals', 'New Arrivals')}
-            ${sectionMarkup('deals', 'Time deals', 'Time Deals')}
-            ${brandHallMarkup()}
+          <div class="home-stack${isFilteredHomeView ? ' is-filtered-view' : ''}">
+            ${homePrimaryContent}
             ${footerMarkup()}
           </div>
         </main>
@@ -1905,7 +2469,6 @@ function homeMarkup() {
     </div>
   `;
 }
-
 function validateLoginForm() {
   const errors = {};
   const email = loginFormState.email.trim();
@@ -2002,8 +2565,25 @@ function loginMarkup() {
               </div>
               <div class="auth-divider"><span>or</span></div>
               <div class="auth-social-grid">
-                <button class="auth-social-button" type="button">Google</button>
-                <button class="auth-social-button" type="button">Apple</button>
+                <button class="auth-social-button" type="button">
+                  <span class="auth-social-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" focusable="false">
+                      <path fill="#EA4335" d="M12.24 10.285v3.955h5.496c-.242 1.272-.967 2.35-2.058 3.073l3.327 2.582c1.94-1.787 3.056-4.418 3.056-7.555 0-.723-.065-1.418-.185-2.055H12.24z"/>
+                      <path fill="#34A853" d="M12 22c2.7 0 4.964-.895 6.618-2.423l-3.327-2.582c-.924.619-2.108.985-3.29.985-2.53 0-4.673-1.708-5.437-4.004H3.126v2.517A9.997 9.997 0 0 0 12 22z"/>
+                      <path fill="#4A90E2" d="M6.563 13.976A5.996 5.996 0 0 1 6.259 12c0-.686.118-1.351.304-1.976V7.507H3.126A9.997 9.997 0 0 0 2 12c0 1.61.386 3.13 1.126 4.493l3.437-2.517z"/>
+                      <path fill="#FBBC05" d="M12 6.02c1.468 0 2.786.505 3.823 1.498l2.868-2.868C16.959 3.04 14.696 2 12 2 8.126 2 4.777 4.22 3.126 7.507l3.437 2.517C7.327 7.728 9.47 6.02 12 6.02z"/>
+                    </svg>
+                  </span>
+                  <span>Google</span>
+                </button>
+                <button class="auth-social-button" type="button">
+                  <span class="auth-social-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" focusable="false">
+                      <path fill="currentColor" d="M16.365 12.063c-.028-2.969 2.424-4.398 2.535-4.467-1.387-2.028-3.543-2.307-4.299-2.338-1.83-.191-3.571 1.077-4.5 1.077-.93 0-2.361-1.05-3.883-1.021-1.998.029-3.84 1.164-4.869 2.957-2.078 3.6-.53 8.926 1.494 11.85.989 1.429 2.168 3.033 3.716 2.976 1.492-.059 2.054-.964 3.858-.964 1.804 0 2.309.964 3.886.93 1.606-.028 2.621-1.457 3.603-2.89 1.136-1.659 1.603-3.264 1.63-3.347-.035-.011-3.125-1.199-3.171-4.763zm-2.962-7.992c.823-.997 1.38-2.38 1.228-3.761-1.186.048-2.622.789-3.473 1.786-.764.886-1.433 2.293-1.253 3.645 1.322.102 2.674-.674 3.498-1.67z"/>
+                    </svg>
+                  </span>
+                  <span>Apple</span>
+                </button>
               </div>
             </article>
           </section>
@@ -3426,6 +4006,15 @@ function renderAccountDashboard(tab = "orders") {
   root.innerHTML = accountDashboardMarkup(tab);
 }
 
+function renderPolicyPage(policy = "shipping") {
+  const root = document.getElementById("root");
+  if (!root) return;
+  root.innerHTML = policyPageMarkup(policy);
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  });
+}
+
 function rerenderCheckoutView(options = {}) {
   renderCheckout();
   attachSharedControls();
@@ -3518,12 +4107,88 @@ function restartSlider() {
   }, 5500);
 }
 
+function scrollHomeToTop() {
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  });
+}
+
 function attachSharedControls() {
   document.querySelectorAll("[data-home-link='true']").forEach((button) => {
     button.onclick = () => {
+      const route = getCurrentRoute();
+      const shouldRefreshHome =
+        route.page === 'home' &&
+        (
+          isAccountMenuOpen ||
+          isMobileCategoryMenuOpen ||
+          isLanguageMenuOpen ||
+          activeHomeSectionFilter !== null ||
+          activeHomeProductLayout !== 'grid'
+        );
+
+      if (route.page !== 'home') {
+        clearSlider();
+      }
+      currentDetailProductId = null;
+      isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = false;
+      activeHomeSectionFilter = null;
+      activeHomeProductLayout = 'grid';
+
+      if (route.page === 'home') {
+        if (window.location.hash) {
+          window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+        }
+        if (shouldRefreshHome) {
+          renderApp();
+        }
+        scrollHomeToTop();
+        return;
+      }
+      window.location.hash = "#top";
+    };
+  });
+
+  document.querySelectorAll("[data-home-nav-link='true']").forEach((link) => {
+    link.onclick = (event) => {
+      event.preventDefault();
+
+      const route = getCurrentRoute();
+      const shouldRefreshHome =
+        route.page === 'home' &&
+        (
+          isAccountMenuOpen ||
+          isMobileCategoryMenuOpen ||
+          isLanguageMenuOpen ||
+          activeHomeSectionFilter !== null ||
+          activeHomeProductLayout !== 'grid'
+        );
+
+      if (route.page === 'home') {
+        isAccountMenuOpen = false;
+        isMobileCategoryMenuOpen = false;
+        isLanguageMenuOpen = false;
+        activeHomeSectionFilter = null;
+        activeHomeProductLayout = 'grid';
+        if (window.location.hash) {
+          window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+        }
+        if (shouldRefreshHome) {
+          renderApp();
+        }
+        scrollHomeToTop();
+        return;
+      }
+
       clearSlider();
       currentDetailProductId = null;
       isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = false;
+      activeHomeSectionFilter = null;
+      activeHomeProductLayout = 'grid';
       window.location.hash = "#top";
     };
   });
@@ -3532,6 +4197,8 @@ function attachSharedControls() {
     button.onclick = () => {
       clearSlider();
       isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = false;
       window.location.hash = "#login";
     };
   });
@@ -3540,6 +4207,8 @@ function attachSharedControls() {
     button.onclick = () => {
       clearSlider();
       isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = false;
       window.location.hash = "#register";
     };
   });
@@ -3548,6 +4217,8 @@ function attachSharedControls() {
     button.onclick = () => {
       clearSlider();
       isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = false;
       window.location.hash = cartRoute();
     };
   });
@@ -3575,14 +4246,159 @@ function attachSharedControls() {
 
   document.querySelectorAll('.category-dropdown-link, .category-submenu-link').forEach((button) => {
     button.onclick = () => {
+      isMobileCategoryMenuOpen = false;
+      activeMobileCategoryId = null;
       button.blur();
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll("[data-category-toggle='true']").forEach((button) => {
+    button.onclick = () => {
+      if (!window.matchMedia("(max-width: 760px)").matches) {
+        button.blur();
+        return;
+      }
+      isLanguageMenuOpen = false;
+      isAccountMenuOpen = false;
+      if (isMobileCategoryMenuOpen) {
+        isMobileCategoryMenuOpen = false;
+        activeMobileCategoryId = null;
+      } else {
+        isMobileCategoryMenuOpen = true;
+        activeMobileCategoryId = null;
+      }
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll('[data-mobile-category-open]').forEach((button) => {
+    button.onclick = () => {
+      const nextId = button.getAttribute('data-mobile-category-open');
+      if (!nextId) return;
+      activeMobileCategoryId = nextId;
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll('[data-mobile-category-back="true"]').forEach((button) => {
+    button.onclick = () => {
+      activeMobileCategoryId = null;
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll('[data-mobile-category-close="true"]').forEach((button) => {
+    button.onclick = () => {
+      isMobileCategoryMenuOpen = false;
+      activeMobileCategoryId = null;
+      renderApp();
     };
   });
 
   document.querySelectorAll("[data-account-toggle='true']").forEach((button) => {
     button.onclick = () => {
+      isLanguageMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      activeMobileCategoryId = null;
       isAccountMenuOpen = !isAccountMenuOpen;
       renderApp();
+    };
+  });
+
+  document.querySelectorAll("[data-language-toggle='true']").forEach((button) => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      isAccountMenuOpen = false;
+      isMobileCategoryMenuOpen = false;
+      isLanguageMenuOpen = !isLanguageMenuOpen;
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll("[data-language-option]").forEach((button) => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const language = button.getAttribute("data-language-option");
+      if (language !== "en" && language !== "ko") return;
+      currentLanguage = language;
+      persistLanguage(language);
+      isLanguageMenuOpen = false;
+      renderApp();
+    };
+  });
+
+  document.querySelectorAll('[data-home-filter]').forEach((button) => {
+    button.onclick = () => {
+      const key = button.getAttribute('data-home-filter');
+      if (!key || !homeFilterProducts(key).length) return;
+      activeHomeSectionFilter = key;
+      activeHomeProductLayout = 'grid';
+      isMobileCategoryMenuOpen = false;
+      activeMobileCategoryId = null;
+      isAccountMenuOpen = false;
+      renderApp();
+      window.requestAnimationFrame(() => {
+        document.getElementById('section-filtered-products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+  });
+
+  document.querySelectorAll('.quick-category-button[data-home-filter]').forEach((button) => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const key = button.getAttribute('data-home-filter');
+      if (!key || !homeFilterProducts(key).length) return;
+      activeHomeSectionFilter = key;
+      activeHomeProductLayout = 'grid';
+      isMobileCategoryMenuOpen = false;
+      activeMobileCategoryId = null;
+      isAccountMenuOpen = false;
+      renderApp();
+      window.requestAnimationFrame(() => {
+        document.getElementById('section-filtered-products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+  });
+
+  document.querySelectorAll('[data-home-filter-clear="true"]').forEach((button) => {
+    button.onclick = () => {
+      activeHomeSectionFilter = null;
+      activeHomeProductLayout = 'grid';
+      activeMobileCategoryId = null;
+      renderApp();
+      window.requestAnimationFrame(() => {
+        document.getElementById('quick-categories')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+  });
+
+  document.querySelectorAll('[data-home-layout]').forEach((button) => {
+    button.onclick = () => {
+      const layout = button.getAttribute('data-home-layout');
+      if (layout !== 'list' && layout !== 'grid') return;
+      activeHomeProductLayout = layout;
+      renderApp();
+      window.requestAnimationFrame(() => {
+        document.getElementById('products-toolbar')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      });
+    };
+  });
+
+  document.querySelectorAll('[data-card-add-to-cart]').forEach((button) => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const productId = Number(button.getAttribute('data-card-add-to-cart'));
+      if (!productId) return;
+      addProductToCart(productId, 1);
+      renderApp();
+      window.requestAnimationFrame(() => {
+        document.getElementById('products-toolbar')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      });
     };
   });
 
@@ -4260,12 +5076,25 @@ function attachCheckoutControls() {
 }
 
 function renderApp() {
+  document.documentElement.lang = currentLanguage;
+  document.body?.setAttribute('data-language', currentLanguage);
+
   const route = getCurrentRoute();
+  if (route.page !== "home") {
+    isMobileCategoryMenuOpen = false;
+    activeMobileCategoryId = null;
+    activeHomeSectionFilter = null;
+    activeHomeProductLayout = 'grid';
+  }
+  document.body?.classList.toggle(
+    'mobile-category-drawer-open',
+    isMobileCategoryMenuOpen && typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches
+  );
   if (route.page === "login") {
     clearSlider();
     resetLoginFormState();
     renderLogin();
-    document.title = "Seoul Basket Login";
+    document.title = t('title_login');
     attachSharedControls();
     attachLoginControls();
     return;
@@ -4275,7 +5104,7 @@ function renderApp() {
     clearSlider();
     resetRegisterFormState();
     renderRegister();
-    document.title = "Seoul Basket Register";
+    document.title = t('title_register');
     attachSharedControls();
     attachRegisterControls();
     return;
@@ -4284,7 +5113,7 @@ function renderApp() {
   if (route.page === "product") {
     clearSlider();
     renderProductDetail(route.id);
-    document.title = "Seoul Basket Product Details";
+    document.title = t('title_product');
     attachSharedControls();
     attachProductDetailControls(route.id);
     focusProductDetailBlock();
@@ -4294,7 +5123,7 @@ function renderApp() {
   if (route.page === "cart") {
     clearSlider();
     renderCart();
-    document.title = "Seoul Basket Cart";
+    document.title = t('title_cart');
     attachSharedControls();
     attachCartControls();
     return;
@@ -4304,7 +5133,7 @@ function renderApp() {
     clearSlider();
     resetCheckoutFormState();
     renderCheckout();
-    document.title = "Seoul Basket Checkout";
+    document.title = t('title_checkout');
     attachSharedControls();
     attachCheckoutControls();
     return;
@@ -4317,7 +5146,7 @@ function renderApp() {
       return;
     }
     renderAccountDashboard(route.tab || 'orders');
-    document.title = "Seoul Basket My Account";
+    document.title = t('title_account');
     attachSharedControls();
     attachAccountDashboardControls();
     return;
@@ -4326,13 +5155,21 @@ function renderApp() {
   if (route.page === "order-status") {
     clearSlider();
     renderOrderStatus(route.id || '');
-    document.title = "Seoul Basket Order Status";
+    document.title = t('title_order_status');
+    attachSharedControls();
+    return;
+  }
+
+  if (route.page === "policy") {
+    clearSlider();
+    renderPolicyPage(route.policy || 'shipping');
+    document.title = `Seoul Basket ${policyPageContent(route.policy || 'shipping').title}`;
     attachSharedControls();
     return;
   }
 
   renderHome();
-  document.title = "Seoul Basket Calgary Marketplace";
+  document.title = t('title_home');
   attachSharedControls();
   attachHeroControls();
   restartSlider();
