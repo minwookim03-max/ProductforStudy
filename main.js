@@ -2696,6 +2696,7 @@ function cartItemMarkup(entry) {
       <div class="cart-item-copy">
         <p class="cart-item-seller">${product.seller}</p>
         <h2 class="cart-item-title">${product.name}</h2>
+        <strong class="cart-item-mobile-price">${money(product.price)}</strong>
         <p class="cart-item-description">${product.description}</p>
         <button class="cart-remove-button" type="button" data-cart-remove="${product.id}">Remove</button>
       </div>
@@ -2706,6 +2707,7 @@ function cartItemMarkup(entry) {
           <strong class="quantity-value">${quantity}</strong>
           <button class="quantity-button" type="button" data-cart-qty="plus" data-cart-product="${product.id}" aria-label="Increase quantity">+</button>
         </div>
+        <button class="cart-remove-button cart-remove-button-mobile" type="button" data-cart-remove="${product.id}">Remove</button>
         <strong class="cart-line-total">${money(lineTotal)}</strong>
       </div>
     </article>
@@ -2721,8 +2723,8 @@ function cartMarkup() {
   const freeDeliveryReached = subtotal >= 100;
 
   return `
-    <div class="page-shell">
-      <div class="market-shell" id="top">
+    <div class="page-shell cart-page-shell">
+      <div class="market-shell cart-market-shell" id="top">
         ${topChrome()}
         <main class="content-shell">
           <div class="cart-stack">
@@ -3449,21 +3451,21 @@ function accountPointsHistory() {
 function accountOrdersSectionMarkup() {
   const orders = accountOrderHistory();
   return `
-    <section class="account-panel">
+    <section class="account-panel account-orders-panel">
       <div class="section-header-copy">
         <p class="section-kicker">Orders</p>
         <h1 class="section-title">Recent orders</h1>
       </div>
       <div class="account-order-list">
         ${orders.map((order) => `
-          <article class="account-order-card">
-            <div class="account-order-main">
-              <div class="account-order-row"><span>Order number</span><strong>${order.id}</strong></div>
-              <div class="account-order-row"><span>Date</span><strong>${order.placedAt}</strong></div>
-              <div class="account-order-row"><span>Status</span><strong>${order.fulfillmentStatus}</strong></div>
-              <div class="account-order-row"><span>Total</span><strong>${money(order.total)}</strong></div>
+          <article class="account-order-card account-order-card-compact">
+            <div class="account-order-main account-order-main-compact">
+              <div class="account-order-row account-order-row-compact"><span>Order number</span><strong>${order.id}</strong></div>
+              <div class="account-order-row account-order-row-compact"><span>Date</span><strong>${order.placedAt}</strong></div>
+              <div class="account-order-row account-order-row-compact"><span>Status</span><strong>${order.fulfillmentStatus}</strong></div>
+              <div class="account-order-row account-order-row-compact"><span>Total</span><strong>${money(order.total)}</strong></div>
             </div>
-            <button class="button-secondary account-order-action" type="button" data-account-view-order="${order.id}">View details</button>
+            <button class="button-secondary account-order-action account-order-action-compact" type="button" data-account-view-order="${order.id}">View details</button>
           </article>
         `).join("")}
       </div>
@@ -3545,7 +3547,7 @@ function accountProfileSectionMarkup() {
   const errors = accountProfileState.errors || {};
   const suggestions = draft.addressOptions || [];
   return `
-    <section class="account-panel">
+    <section class="account-panel account-profile-panel">
       <div class="section-header-copy">
         <p class="section-kicker">Profile</p>
         <h1 class="section-title">My Profile</h1>
@@ -3635,13 +3637,14 @@ function accountMainMarkup(tab) {
 }
 
 function accountDashboardMarkup(tab = "orders") {
+  const dashboardClass = `account-dashboard-card-shell account-dashboard-card-shell-${tab}`;
   return `
     <div class="page-shell">
       <div class="market-shell" id="top">
         ${loginTopChrome()}
         <main class="content-shell content-shell-login">
           <section class="checkout-centered-shell">
-            <div class="checkout-card-shell account-dashboard-card-shell">
+            <div class="checkout-card-shell ${dashboardClass}">
               <section class="detail-breadcrumbs">
                 <button class="detail-back-link" type="button" data-home-link="true">Home</button>
                 <span>/</span>
