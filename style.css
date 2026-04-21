@@ -21,6 +21,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -1203,14 +1204,17 @@ button {
 
   .account-sidebar {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    padding: 10px;
+    gap: 6px;
+    padding: 7px;
   }
 
   .account-sidebar-link {
-    min-height: 48px;
-    padding: 10px 8px;
+    min-height: 34px;
+    padding: 6px 4px;
     text-align: center;
-    font-size: 0.84rem;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    border-radius: 12px;
   }
 
   .account-panel,
@@ -1223,9 +1227,36 @@ button {
   .account-order-card {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 14px;
   }
 
-  .account-order-main,
+  .account-order-main {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .account-order-row {
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .account-order-row span,
+  .account-order-row strong {
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .account-order-row span {
+    font-size: 0.68rem;
+  }
+
+  .account-order-row strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.74rem;
+  }
+
   .account-points-grid,
   .account-points-summary-grid,
   .account-points-rules-grid,
@@ -4114,6 +4145,11 @@ html[lang="ko"] .quick-category-label {
   color: #2b2018;
 }
 
+.cart-item-mobile-price,
+.cart-remove-button-mobile {
+  display: none;
+}
+
 .cart-quantity-selector {
   min-width: 156px;
   justify-content: space-between;
@@ -4226,37 +4262,305 @@ html[lang="ko"] .quick-category-label {
 }
 
 @media (max-width: 760px) {
+  .cart-page-shell .header-main-marketlike {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .cart-page-shell .header-desktop-row,
+  .cart-page-shell .header-menu-trigger,
+  .cart-page-shell .header-mobile-actions,
+  .cart-page-shell .header-search-shell-mobile,
+  .cart-page-shell .announcement-bar,
+  .cart-page-shell .nav-strip-inner,
+  .cart-page-shell .mobile-category-drawer {
+    display: none !important;
+  }
+
+  .cart-page-shell .header-mobile-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .cart-page-shell .header-logo-button-centered {
+    justify-self: center;
+  }
+
+  .cart-page-shell .header-logo-image {
+    height: 44px;
+    max-width: min(188px, 48vw);
+  }
+
+  .cart-page-shell .content-shell {
+    width: 100%;
+  }
+
+  .cart-page-shell .cart-stack {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 18px;
+  }
+
+  .cart-page-shell .detail-breadcrumbs {
+    order: 1;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 0.78rem;
+  }
+
+  .cart-page-shell .cart-shell {
+    order: 2;
+    padding: 12px;
+  }
+
+  .cart-page-shell .footer-preview {
+    display: none;
+  }
+
   .cart-shell,
   .cart-list-panel,
   .cart-summary-panel,
   .cart-empty-state,
   .cart-item-card {
-    border-radius: 24px;
+    border-radius: 18px;
   }
 
   .cart-shell,
   .cart-list-panel,
   .cart-summary-panel {
-    padding: 18px;
+    padding: 12px;
   }
 
-  .cart-stack {
-    padding-bottom: 130px;
+  .cart-page-shell .cart-grid {
+    gap: 10px;
   }
 
   .cart-item-media {
-    min-height: 150px;
+    grid-area: media;
+    align-content: end;
+    min-height: 112px;
+    gap: 4px;
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .cart-item-media strong {
+    font-size: 1rem;
+  }
+
+  .cart-item-media span,
+  .cart-item-seller,
+  .cart-item-description,
+  .cart-remove-button {
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .cart-header-row {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .cart-header-row .section-title {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    line-height: 1.05;
+  }
+
+  .cart-count-pill,
+  .cart-item-badge {
+    padding: 5px 8px;
+    font-size: 0.64rem;
+  }
+
+  .cart-items-list {
+    gap: 10px;
+  }
+
+  .cart-item-card {
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas:
+      "media copy"
+      "media meta";
+    align-items: stretch;
+    gap: 8px 10px;
+    padding: 10px;
+  }
+
+  .cart-item-copy {
+    grid-area: copy;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .cart-item-copy > .cart-remove-button:not(.cart-remove-button-mobile),
+  .cart-item-description,
+  .cart-item-meta .cart-item-price {
+    display: none;
+  }
+
+  .cart-item-mobile-price {
+    display: block;
+    color: #2b2018;
+    font-size: 0.92rem;
+    line-height: 1.1;
+  }
+
+  .cart-remove-button-mobile {
+    display: inline-flex;
+    grid-area: remove;
+    align-items: center;
+    justify-content: flex-start;
+    width: fit-content;
+    font-size: 0.66rem;
+    line-height: 1.1;
+  }
+
+  .cart-item-title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.82rem;
+    line-height: 1.22;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .cart-item-seller {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cart-item-meta {
+    grid-area: meta;
+    grid-template-columns: minmax(96px, auto) minmax(48px, 1fr);
+    grid-template-areas:
+      "qty total"
+      "remove total";
+    align-items: end;
+    justify-items: stretch;
+    gap: 5px 8px;
+    min-width: 0;
+  }
+
+  .cart-item-price {
+    font-size: 0.85rem;
+  }
+
+  .cart-line-total {
+    grid-area: total;
+    align-self: end;
+    justify-self: end;
+    font-size: 0.92rem;
+    line-height: 1.1;
+  }
+
+  .cart-quantity-selector {
+    grid-area: qty;
+    min-width: 96px;
+    max-width: 116px;
+  }
+
+  .cart-quantity-selector .quantity-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .cart-quantity-selector .quantity-value {
+    font-size: 0.76rem;
+  }
+
+  .cart-summary-panel {
+    gap: 10px;
+  }
+
+  .cart-summary-rows,
+  .cart-summary-actions,
+  .cart-empty-state {
+    gap: 9px;
+  }
+
+  .cart-summary-row {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+
+  .cart-summary-row-delivery {
+    margin-top: 2px;
+    padding-top: 8px;
+  }
+
+  .cart-summary-total {
+    padding-top: 9px;
+    font-size: 0.88rem;
+  }
+
+  .cart-summary-total strong {
+    font-size: 1.1rem;
+  }
+
+  .cart-summary-note {
+    gap: 3px;
+    padding: 10px;
+    border-radius: 14px;
+    font-size: 0.72rem;
+    line-height: 1.25;
+  }
+
+  .cart-primary-action,
+  .cart-secondary-action {
+    min-height: 40px;
+    font-size: 0.78rem;
+    padding: 0 12px;
   }
 
   .cart-quantity-selector,
   .cart-secondary-action,
-  .cart-primary-action,
-  .cart-sticky-checkout .sticky-mobile-cart-button {
+  .cart-primary-action {
     width: 100%;
   }
 
   .cart-summary-actions {
     grid-template-columns: 1fr;
+  }
+
+  .cart-page-shell .cart-empty-state {
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .cart-page-shell .cart-empty-state strong {
+    font-size: 0.92rem;
+    line-height: 1.2;
+  }
+
+  .cart-page-shell .cart-empty-state p {
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  .cart-page-shell .cart-empty-state .button-secondary {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.76rem;
+  }
+
+  .cart-sticky-checkout {
+    display: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .cart-page-shell .header-logo-image {
+    height: 42px;
+    max-width: min(178px, 46vw);
   }
 }
 
@@ -9381,5 +9685,486 @@ html[lang="ko"] .footer-policy-card h3 {
     min-height: 36px;
     padding: 0 14px;
     font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .account-orders-panel .account-order-card-compact {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  .account-orders-panel .account-order-main-compact {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 12px !important;
+    min-width: 0;
+  }
+
+  .account-orders-panel .account-order-row-compact {
+    display: grid !important;
+    gap: 3px !important;
+    min-width: 0;
+  }
+
+  .account-orders-panel .account-order-row-compact span,
+  .account-orders-panel .account-order-row-compact strong {
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .account-orders-panel .account-order-row-compact span {
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+  }
+
+  .account-orders-panel .account-order-row-compact strong {
+    min-width: 0;
+    font-size: 0.82rem !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .account-orders-panel .account-order-action-compact {
+    width: 100% !important;
+    min-height: 38px;
+    padding: 0 12px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .account-points-panel {
+    gap: 8px;
+    padding: 12px 14px !important;
+  }
+
+  .account-points-panel .section-header-copy {
+    gap: 4px;
+  }
+
+  .account-points-panel .section-title {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    line-height: 1.05;
+  }
+
+  .account-points-intro {
+    display: none;
+  }
+
+  .account-points-hero {
+    gap: 6px;
+  }
+
+  .account-points-balance-card {
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 4px 10px;
+    padding: 10px 14px;
+    border-radius: 18px;
+  }
+
+  .account-points-balance-card .account-points-card-label {
+    grid-column: 1;
+    font-size: 0.7rem;
+    line-height: 1.1;
+  }
+
+  .account-points-balance-card strong {
+    grid-column: 2;
+    justify-self: end;
+    font-size: 1.55rem;
+  }
+
+  .account-points-balance-card p {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    grid-column: 1 / -1;
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .account-points-balance-card p strong {
+    color: #c25733;
+    font-size: 0.92rem;
+  }
+
+  .account-points-mini-card p {
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .account-points-summary-grid {
+    display: none !important;
+  }
+
+  .account-points-mini-card {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: 3px 10px;
+    padding: 10px 12px;
+    border-radius: 16px;
+  }
+
+  .account-points-mini-card span {
+    font-size: 0.66rem;
+  }
+
+  .account-points-mini-card strong {
+    font-size: 0.9rem;
+    line-height: 1.18;
+  }
+
+  .account-points-mini-card p {
+    grid-column: 1 / -1;
+  }
+
+  .account-points-rules-card,
+  .account-history-card {
+    margin-top: 6px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .account-points-rules-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px;
+    margin-top: 8px;
+  }
+
+  .account-points-rules-grid div {
+    gap: 4px;
+    padding: 9px 7px;
+    border-radius: 13px;
+  }
+
+  .account-points-rules-grid span {
+    font-size: 0.58rem;
+    line-height: 1.1;
+  }
+
+  .account-points-rules-grid strong {
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+
+  .account-points-history-list {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .account-points-history-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px 10px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .account-points-history-row div {
+    gap: 2px;
+  }
+
+  .account-points-history-row div:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .account-points-history-row span {
+    font-size: 0.62rem;
+    line-height: 1.15;
+  }
+
+  .account-points-history-row strong {
+    font-size: 0.76rem;
+    line-height: 1.22;
+  }
+}
+
+@media (max-width: 760px) {
+  .account-dashboard-card-shell-profile {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 12px;
+  }
+
+  .account-dashboard-card-shell-profile .detail-breadcrumbs {
+    margin-bottom: 0;
+  }
+
+  .account-dashboard-card-shell-profile .account-dashboard-shell {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100%;
+  }
+
+  .account-dashboard-card-shell-profile .account-dashboard-main {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .account-profile-panel {
+    padding: 12px 14px !important;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .account-profile-panel .section-header-copy {
+    gap: 4px;
+  }
+
+  .account-profile-panel .section-title {
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    line-height: 1.05;
+  }
+
+  .account-profile-panel .account-profile-card {
+    gap: 10px;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .account-profile-panel .account-profile-row {
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .account-profile-panel .account-profile-row > span:first-child {
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+
+  .account-profile-panel .account-profile-form input {
+    min-height: 38px;
+    margin-top: 2px;
+    padding: 9px 11px;
+    border-radius: 11px;
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+
+  .account-profile-panel .address-input-shell {
+    min-width: 0;
+  }
+
+  .account-profile-panel .address-results {
+    gap: 4px;
+    max-height: 220px;
+    margin-top: 2px;
+  }
+
+  .account-profile-panel .address-option {
+    gap: 2px;
+    padding: 7px 9px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    line-height: 1.1;
+  }
+
+  .account-profile-panel .address-option strong {
+    font-size: 0.76rem;
+    line-height: 1.15;
+  }
+
+  .account-profile-panel .address-option span {
+    font-size: 0.64rem;
+    line-height: 1.15;
+  }
+
+  .account-profile-panel .selected-address-card {
+    gap: 4px;
+    padding: 9px 10px;
+    border-radius: 12px;
+  }
+
+  .account-profile-panel .selected-address-label {
+    font-size: 0.58rem;
+    line-height: 1.1;
+    letter-spacing: 0.06em;
+  }
+
+  .account-profile-panel .selected-address-card strong {
+    font-size: 0.74rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .account-profile-panel .account-profile-checkbox-copy {
+    gap: 6px;
+  }
+
+  .account-profile-panel .account-profile-checkbox-heading {
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.78rem;
+    line-height: 1.15;
+  }
+
+  .account-profile-panel .account-profile-checkbox input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .account-profile-panel .account-profile-checkbox-description {
+    gap: 3px;
+  }
+
+  .account-profile-panel .account-profile-checkbox-text {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+
+  .account-profile-panel .account-profile-actions {
+    margin-top: 0;
+    gap: 8px;
+  }
+
+  .account-profile-panel .account-profile-actions .button-secondary,
+  .account-profile-panel .account-profile-actions .button-primary {
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 0.78rem;
+  }
+
+  .account-profile-panel .account-password-card {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .account-profile-panel .account-password-card .section-title {
+    font-size: clamp(1rem, 5.5vw, 1.25rem);
+  }
+
+  .account-profile-panel .account-password-copy {
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .account-profile-panel .account-password-card .button-secondary {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.76rem;
+  }
+
+  .account-dashboard-card-shell:has(.account-profile-form) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .account-dashboard-main,
+  .account-dashboard-shell:has(.account-profile-form) .account-panel,
+  .account-dashboard-shell:has(.account-profile-form) .account-profile-card,
+  .account-dashboard-shell:has(.account-profile-form) .account-password-card {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .account-profile-card,
+  .account-dashboard-shell:has(.account-profile-form) .account-password-card {
+    padding: 12px !important;
+    border-radius: 16px;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .account-profile-form input {
+    min-height: 38px;
+    padding: 9px 11px;
+    font-size: 0.82rem;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .address-option {
+    padding: 7px 9px;
+    border-radius: 10px;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .address-option strong {
+    font-size: 0.76rem;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .address-option span {
+    font-size: 0.64rem;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .selected-address-card {
+    padding: 9px 10px;
+    border-radius: 12px;
+  }
+
+  .account-dashboard-shell:has(.account-profile-form) .account-profile-checkbox-text {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (min-width: 761px) {
+  .account-dashboard-card-shell {
+    width: min(1120px, 100%) !important;
+    max-width: 1120px;
+    margin-inline: auto;
+  }
+
+  .account-dashboard-card-shell-orders,
+  .account-dashboard-card-shell-points,
+  .account-dashboard-card-shell-profile {
+    width: min(1120px, 100%) !important;
+    max-width: 1120px;
+    margin-inline: auto;
+  }
+
+  .account-dashboard-shell {
+    width: 100%;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .account-dashboard-main,
+  .account-panel,
+  .account-orders-panel,
+  .account-points-panel,
+  .account-profile-panel,
+  .account-profile-card,
+  .account-password-card,
+  .account-history-card {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .account-profile-panel .account-profile-card,
+  .account-profile-panel .account-password-card {
+    max-width: 100%;
+  }
+
+  .account-profile-form input,
+  .account-profile-form .address-input-shell,
+  .account-profile-checkbox-copy,
+  .account-profile-checkbox-description,
+  .account-profile-actions,
+  .account-points-history-row > div {
+    min-width: 0;
+  }
+
+  .account-profile-checkbox-text {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .account-points-history-row strong,
+  .account-profile-row strong,
+  .selected-address-card strong {
+    overflow-wrap: anywhere;
   }
 }
