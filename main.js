@@ -5,15 +5,15 @@ const announcementItems = [
 ];
 
 const quickCategories = [
-  { id: "vans-pick", label: "Van's Pick", shortLabel: "Van", tone: "orange" },
-  { id: "soups-side-dishes", label: "Soups / Side Dishes", shortLabel: "Soup", tone: "brown" },
-  { id: "kimchi", label: "Kimchi", shortLabel: "Kim", tone: "orange" },
-  { id: "meal-kits", label: "Meal Kits", shortLabel: "Meal", tone: "green" },
-  { id: "fruits-vegetables", label: "Fruits / Vegetables", shortLabel: "Fresh", tone: "green" },
-  { id: "meat", label: "Meat", shortLabel: "Meat", tone: "brown" },
-  { id: "seafood", label: "Seafood", shortLabel: "Sea", tone: "green" },
-  { id: "snacks-desserts", label: "Snacks / Desserts", shortLabel: "Snack", tone: "orange" },
-  { id: "home-beauty", label: "Home / Beauty", shortLabel: "Home", tone: "brown" },
+  { id: "vans-pick", label: "Van's Pick", shortLabel: "Van", tone: "orange", image: "./assets/category-vans-pick.png", imageAlt: "Assorted Korean banchan box" },
+  { id: "soups-side-dishes", label: "Soups / Side Dishes", shortLabel: "Soup", tone: "brown", image: "./assets/category-soups-side-dishes.png", imageAlt: "Korean soup and side dish pack" },
+  { id: "kimchi", label: "Kimchi", shortLabel: "Kim", tone: "orange", image: "./assets/category-kimchi.png", imageAlt: "Jar of napa cabbage kimchi" },
+  { id: "meal-kits", label: "Meal Kits", shortLabel: "Meal", tone: "green", image: "./assets/category-meal-kits.png", imageAlt: "Korean meal kit tray" },
+  { id: "fruits-vegetables", label: "Fruits / Vegetables", shortLabel: "Fresh", tone: "green", image: "./assets/category-fruits-vegetables.png", imageAlt: "Fresh Korean vegetable box" },
+  { id: "meat", label: "Meat", shortLabel: "Meat", tone: "brown", image: "./assets/category-meat.png", imageAlt: "Marinated bulgogi meat tray" },
+  { id: "seafood", label: "Seafood", shortLabel: "Sea", tone: "green", image: "./assets/category-seafood.png", imageAlt: "Mackerel fillet seafood pack" },
+  { id: "snacks-desserts", label: "Snacks / Desserts", shortLabel: "Snack", tone: "orange", image: "./assets/category-snacks-desserts.png", imageAlt: "Assorted Korean snack pack" },
+  { id: "home-beauty", label: "Home / Beauty", shortLabel: "Home", tone: "brown", image: "./assets/category-home-beauty.png", imageAlt: "Korean home and beauty set" },
 ];
 
 const marketplaceCategories = [
@@ -88,6 +88,13 @@ const products = [
     delivery: "Delivered this Thursday in Calgary",
     description: "A ready-to-share banchan assortment with japchae, stir-fried anchovy, seasoned spinach, and radish kimchi.",
     image: "Banchan box",
+    gallery: [
+      { src: "./assets/product-banchan-box-gallery-1.png", alt: "Open banchan assortment box with six Korean side dishes", title: "Banchan box", note: "Main product view", start: "#fff6ea", end: "#ebd0b3" },
+      { title: "Japchae side", note: "Prepared noodle side dish", start: "#f8efdf", end: "#dec2a0" },
+      { title: "Kimchi pack", note: "Freshly packed fermented side", start: "#eef4ea", end: "#d8e4d1" },
+      { title: "Family table", note: "Ready-to-share serving idea", start: "#fff3df", end: "#e8c59b" },
+      { title: "Delivery pack", note: "Cold-chain Calgary route", start: "#f1f6ee", end: "#cfdcc8" },
+    ],
   },
   {
     id: 2,
@@ -103,6 +110,9 @@ const products = [
     delivery: "Weekend delivery slots open",
     description: "A complete stew kit with sausages, tofu, noodles, kimchi, and spicy broth for four.",
     image: "Meal kit",
+    gallery: [
+      { src: "./assets/product-budae-jjigae-gallery-1.png", alt: "Budae jjigae family meal kit ingredients in a tray" },
+    ],
   },
   {
     id: 3,
@@ -118,6 +128,9 @@ const products = [
     delivery: "Fresh batch packed today",
     description: "Crisp napa kimchi fermented in small batches for a balanced spicy and savoury flavour.",
     image: "Kimchi jar",
+    gallery: [
+      { src: "./assets/product-kimchi-jar-gallery-1.png", alt: "Glass jar filled with chopped napa cabbage kimchi" },
+    ],
   },
   {
     id: 4,
@@ -133,6 +146,9 @@ const products = [
     delivery: "Calgary / Airdrie route this week",
     description: "Leafy greens, perilla leaves, garlic, peppers, and cucumber packed for barbecue nights.",
     image: "Fresh greens",
+    gallery: [
+      { src: "./assets/product-ssam-vegetable-box-gallery-1.png", alt: "Fresh ssam vegetable box with lettuce perilla cucumber garlic and peppers" },
+    ],
   },
   {
     id: 5,
@@ -148,6 +164,9 @@ const products = [
     delivery: "Cold-chain van delivery available",
     description: "Thinly sliced marinated beef prepared for quick pan-fry dinners and lettuce wraps.",
     image: "Bulgogi tray",
+    gallery: [
+      { src: "./assets/product-bulgogi-family-tray-gallery-1.png", alt: "Tray of thin sliced marinated beef bulgogi with vegetables" },
+    ],
   },
   {
     id: 6,
@@ -163,6 +182,9 @@ const products = [
     delivery: "Frozen route on Friday",
     description: "Portioned mackerel fillets for grilling, braising, and easy weeknight Korean meals.",
     image: "Seafood pack",
+    gallery: [
+      { src: "./assets/product-mackerel-fillet-pack-gallery-1.png", alt: "Pack of portioned mackerel fillets" },
+    ],
   },
   {
     id: 7,
@@ -178,6 +200,9 @@ const products = [
     delivery: "Add-on item for any route",
     description: "Chewy rice cakes, sweet-spicy sauce, fish cake, and sesame for a quick street-food craving.",
     image: "Tteokbokki",
+    gallery: [
+      { src: "./assets/product-tteokbokki-party-cup-gallery-1.png", alt: "Cup of spicy Korean tteokbokki rice cakes" },
+    ],
   },
   {
     id: 8,
@@ -193,6 +218,9 @@ const products = [
     delivery: "Heat-and-serve delivery today",
     description: "Slow-simmered beef short rib soup prepared for comforting dinners and easy lunch prep.",
     image: "Soup pack",
+    gallery: [
+      { src: "./assets/product-galbitang-soup-pack-gallery-1.png", alt: "Heat and serve galbitang beef short rib soup pack" },
+    ],
   },
   {
     id: 9,
@@ -208,6 +236,9 @@ const products = [
     delivery: "Ships with lifestyle orders",
     description: "A gentle everyday skincare bundle with hydration masks and a travel-size soothing cream.",
     image: "Beauty set",
+    gallery: [
+      { src: "./assets/product-sheet-mask-set-gallery-1.png", alt: "Daily Korean sheet mask and soothing cream set" },
+    ],
   },
   {
     id: 10,
@@ -223,6 +254,9 @@ const products = [
     delivery: "Cochrane route available Saturday",
     description: "Sweet crisp grapes selected for gifting, entertaining, or premium fruit baskets.",
     image: "Fruit tray",
+    gallery: [
+      { src: "./assets/product-shine-muscat-tray-gallery-1.png", alt: "Premium shine muscat grapes arranged in a gift tray" },
+    ],
   },
   {
     id: 11,
@@ -238,6 +272,9 @@ const products = [
     delivery: "Useful for checkout tax verification",
     description: "A compact pantry bundle priced to make province-based tax changes easy to verify.",
     image: "Tax combo",
+    gallery: [
+      { src: "./assets/product-pantry-combo-gallery-1.png", alt: "Compact Korean pantry combo bundle with sauces rice and seaweed" },
+    ],
   },
   {
     id: 12,
@@ -253,6 +290,9 @@ const products = [
     delivery: "Good for subtotal and tax testing",
     description: "A snack bundle with a subtotal that shows province tax differences clearly.",
     image: "Snack pack",
+    gallery: [
+      { src: "./assets/product-snack-cart-pack-gallery-1.png", alt: "Korean snack cart pack with assorted snacks and sweets" },
+    ],
   },
   {
     id: 13,
@@ -268,6 +308,9 @@ const products = [
     delivery: "Lifestyle item for tax scenario checks",
     description: "A higher-price lifestyle bundle added so tax and points calculations are easier to inspect.",
     image: "Home care",
+    gallery: [
+      { src: "./assets/product-home-care-set-gallery-1.png", alt: "Premium home care set with cleaning bottle refill and cloths" },
+    ],
   },
 ];
 
@@ -380,9 +423,9 @@ const quickCategoryFilterMeta = Object.fromEntries(
 );
 
 const deliveryZones = [
-  { icon: "Cal", title: "Calgary", note: "Primary delivery zone", eta: "Estimated Apr 16-17, 2026" },
-  { icon: "Air", title: "Airdrie", note: "Selected route days", eta: "Estimated Apr 17, 2026" },
-  { icon: "Coc", title: "Cochrane", note: "Weekly marketplace drop", eta: "Estimated Apr 18, 2026" },
+  { icon: "Cal", title: "Calgary", note: "Primary delivery zone", eta: "Estimated Apr 16-17, 2026", mobileEta: "Next local route" },
+  { icon: "Air", title: "Airdrie", note: "Selected route days", eta: "Estimated Apr 17, 2026", mobileEta: "Selected route days" },
+  { icon: "Coc", title: "Cochrane", note: "Weekly marketplace drop", eta: "Estimated Apr 18, 2026", mobileEta: "Weekly drop" },
 ];
 
 const checkoutDeliverySlots = [
@@ -429,6 +472,22 @@ const canadianProvinces = [
   "Saskatchewan",
   "Yukon",
 ];
+
+const canadianProvinceAbbreviations = {
+  Alberta: "AB",
+  "British Columbia": "BC",
+  Manitoba: "MB",
+  "New Brunswick": "NB",
+  "Newfoundland and Labrador": "NL",
+  "Northwest Territories": "NT",
+  "Nova Scotia": "NS",
+  Nunavut: "NU",
+  Ontario: "ON",
+  "Prince Edward Island": "PE",
+  Quebec: "QC",
+  Saskatchewan: "SK",
+  Yukon: "YT",
+};
 
 const countryRegions = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -1416,13 +1475,31 @@ function conciseDeliverySlotRoute(value = "") {
   return routePartRaw.trim() || "";
 }
 
+function addressIncludesPart(address, part) {
+  const normalizedAddress = String(address || "").toLowerCase();
+  const normalizedPart = String(part || "").toLowerCase().trim();
+  if (!normalizedPart) return true;
+  if (normalizedAddress.includes(normalizedPart)) return true;
+  const provinceAbbreviation = canadianProvinceAbbreviations[part];
+  if (!provinceAbbreviation) return false;
+  return new RegExp(`(^|[^a-z])${provinceAbbreviation.toLowerCase()}([^a-z]|$)`).test(normalizedAddress);
+}
+
 function composeAddressLine(address, addressLine2, city, province, postalCode, country = "Canada") {
-  return [
-    address,
+  const optionalParts = [
     addressLine2,
-    [city, province].filter(Boolean).join(", "),
+    [city, province].filter((part) => {
+      return !addressIncludesPart(address, part);
+    }).join(", "),
     postalCode,
     country,
+  ].filter((part) => {
+    return !addressIncludesPart(address, part);
+  });
+
+  return [
+    address,
+    ...optionalParts,
   ].filter(Boolean).join(" · ");
 }
 
@@ -1637,9 +1714,11 @@ function galleryItems(product) {
     ["#fff6ea", "#ebd0b3"],
     ["#f8efdf", "#dec2a0"],
     ["#eef4ea", "#d8e4d1"],
+    ["#fff3df", "#e8c59b"],
+    ["#f1f6ee", "#cfdcc8"],
   ];
   const profile = productProfile(product);
-  return [
+  const fallbackItems = [
     {
       title: product.image,
       note: product.badge + " pick",
@@ -1659,6 +1738,42 @@ function galleryItems(product) {
       end: tones[2][1],
     },
   ];
+
+  const sourceItems = Array.isArray(product.gallery) && product.gallery.length
+    ? product.gallery
+    : Array.isArray(product.galleryImages) && product.galleryImages.length
+      ? product.galleryImages.map((src, index) => ({
+          src,
+          title: index === 0 ? product.image : `${product.image} ${index + 1}`,
+          note: index === 0 ? product.badge + " pick" : profile.subtitle,
+        }))
+      : fallbackItems;
+
+  return sourceItems.map((item, index) => {
+    const tone = tones[index % tones.length];
+    if (typeof item === "string") {
+      return {
+        src: item,
+        alt: `${product.name} image ${index + 1}`,
+        title: index === 0 ? product.image : `${product.image} ${index + 1}`,
+        note: index === 0 ? product.badge + " pick" : profile.subtitle,
+        start: tone[0],
+        end: tone[1],
+      };
+    }
+    return {
+      src: item.src || "",
+      alt: item.alt || `${product.name} image ${index + 1}`,
+      title: item.title || (index === 0 ? product.image : `${product.image} ${index + 1}`),
+      note: item.note || (index === 0 ? product.badge + " pick" : profile.subtitle),
+      start: item.start || tone[0],
+      end: item.end || tone[1],
+    };
+  });
+}
+
+function primaryProductImage(product) {
+  return galleryItems(product).find((item) => item.src) || null;
 }
 
 
@@ -1947,15 +2062,15 @@ function checkoutEstimatedEarnPoints() {
 
 function productCard(product, options = {}) {
   const discount = discountPercent(product);
+  const primaryGalleryImage = primaryProductImage(product);
   return `
     <article class="market-product-card" data-product-id="${product.id}" ${options.forceReload ? 'data-product-reload="true"' : ''} tabindex="0" role="link">
-      <div class="market-product-media">
+      <div class="market-product-media${primaryGalleryImage ? " has-product-image" : ""}">
+        ${primaryGalleryImage ? `<img class="market-product-image" src="${primaryGalleryImage.src}" alt="${primaryGalleryImage.alt}" loading="lazy" />` : ""}
         <div class="market-product-media-top">
           <span class="market-product-discount">${product.badge}</span>
           ${discount ? `<span class="market-product-discount">Save ${discount}%</span>` : ''}
         </div>
-        <strong class="market-product-media-title">${product.image}</strong>
-        <span class="market-product-media-note">${product.delivery}</span>
       </div>
       <h3 class="market-product-name">${product.name}</h3>
       <div class="market-product-footer market-product-footer-compact">
@@ -2002,9 +2117,11 @@ function quickMenuMarkup() {
         </div>
       </div>
       <div class="quick-menu-grid quick-menu-rail">
-        ${quickCategories.slice(0, 8).map((category) => `
+        ${quickCategories.map((category) => `
           <button class="quick-category-button is-${category.tone}" type="button" data-home-filter="${category.id}">
-            <span class="quick-category-thumb">${translatedCategoryLabel(category.id, category.shortLabel)}</span>
+            <span class="quick-category-thumb${category.image ? ' has-category-image' : ''}">
+              ${category.image ? `<img class="quick-category-image" src="${category.image}" alt="${category.imageAlt || translatedCategoryLabel(category.id, category.label)}" loading="lazy" />` : translatedCategoryLabel(category.id, category.shortLabel)}
+            </span>
             <span class="quick-category-label">${translatedCategoryLabel(category.id, category.label)}</span>
           </button>
         `).join('')}
@@ -2686,12 +2803,16 @@ function registerMarkup() {
 
 function cartItemMarkup(entry) {
   const { product, quantity, lineTotal } = entry;
+  const primaryGalleryImage = primaryProductImage(product);
   return `
     <article class="cart-item-card" data-cart-item="${product.id}">
-      <div class="cart-item-media">
-        <span class="cart-item-badge">${product.badge}</span>
-        <strong>${product.image}</strong>
-        <span>${product.delivery}</span>
+      <div class="cart-item-media${primaryGalleryImage ? " has-product-image" : ""}">
+        ${primaryGalleryImage ? `<img class="cart-item-image" src="${primaryGalleryImage.src}" alt="${primaryGalleryImage.alt}" loading="lazy" />` : ""}
+        ${primaryGalleryImage ? "" : `<span class="cart-item-badge">${product.badge}</span>`}
+        ${primaryGalleryImage ? "" : `
+          <strong>${product.image}</strong>
+          <span>${product.delivery}</span>
+        `}
       </div>
       <div class="cart-item-copy">
         <p class="cart-item-seller">${product.seller}</p>
@@ -2921,8 +3042,8 @@ function checkoutMarkup() {
   `;
 
   return `
-    <div class="page-shell">
-      <div class="market-shell" id="top">
+    <div class="page-shell checkout-page-shell">
+      <div class="market-shell checkout-market-shell" id="top">
         ${loginTopChrome()}
         <main class="content-shell content-shell-login">
           <section class="checkout-centered-shell">
@@ -3678,8 +3799,8 @@ function orderStatusMarkup(orderId = "") {
       <div class="market-shell" id="top">
         ${loginTopChrome()}
         <main class="content-shell content-shell-login">
-          <section class="checkout-centered-shell">
-            <div class="checkout-card-shell">
+          <section class="checkout-centered-shell order-status-centered-shell">
+            <div class="checkout-card-shell order-status-card-shell">
               <div class="order-status-stack">
                 <section class="detail-breadcrumbs">
                   <button class="detail-back-link" type="button" data-home-link="true">Home</button>
@@ -3742,21 +3863,24 @@ function orderStatusMarkup(orderId = "") {
                         </div>
                       </div>
                       <div class="order-item-list">
-                        ${order.items.map((item) => `
-                          <article class="order-item-card">
-                            <button class="order-item-media" type="button" data-order-product-link="${item.id}">
-                              <strong>${item.image}</strong>
-                            </button>
-                            <div class="order-item-copy">
-                              <p class="cart-item-seller">${item.seller}</p>
-                              <h3><button class="order-item-name-link" type="button" data-order-product-link="${item.id}">${item.name}</button></h3>
-                            </div>
-                            <div class="order-item-price">
-                              <span>Qty ${item.quantity}</span>
-                              <strong>${money(item.lineTotal)}</strong>
-                            </div>
-                          </article>
-                        `).join("")}
+                        ${order.items.map((item) => {
+                          const primaryGalleryImage = primaryProductImage(item);
+                          return `
+                            <article class="order-item-card">
+                              <button class="order-item-media${primaryGalleryImage ? " has-product-image" : ""}" type="button" data-order-product-link="${item.id}" aria-label="View ${item.name}">
+                                ${primaryGalleryImage ? `<img class="order-item-image" src="${primaryGalleryImage.src}" alt="${primaryGalleryImage.alt}" loading="lazy" />` : `<strong>${item.image}</strong>`}
+                              </button>
+                              <div class="order-item-copy">
+                                <p class="cart-item-seller">${item.seller}</p>
+                                <h3><button class="order-item-name-link" type="button" data-order-product-link="${item.id}">${item.name}</button></h3>
+                              </div>
+                              <div class="order-item-price">
+                                <span>Qty ${item.quantity}</span>
+                                <strong>${money(item.lineTotal)}</strong>
+                              </div>
+                            </article>
+                          `;
+                        }).join("")}
                       </div>
                     </article>
                   </div>
@@ -3805,37 +3929,49 @@ function productDetailMarkup(product) {
   const activeGallery = galleries[currentDetailImage] || galleries[0];
 
   return `
-    <div class="page-shell">
+    <div class="page-shell product-detail-page-shell">
       <div class="market-shell" id="top">
         ${topChrome()}
-        <main class="content-shell">
-          <div class="detail-stack">
-            <div class="page-focus-anchor" id="product-page-start" tabindex="-1" aria-hidden="true"></div>
-            <section class="detail-breadcrumbs">
-              <button class="detail-back-link" type="button" data-home-link="true">Home</button>
-              <span>/</span>
-              <span>Product</span>
-            </section>
-
+        <main class="content-shell product-detail-content-shell">
+          <div class="page-focus-anchor" aria-hidden="true"></div>
+          <section class="detail-breadcrumbs product-detail-breadcrumbs" id="product-page-start" tabindex="-1">
+            <button class="detail-back-link" type="button" data-home-link="true">Home</button>
+            <span>/</span>
+            <span>Product</span>
+          </section>
+          <div class="detail-stack product-detail-stack">
             <section class="product-detail-shell">
               <div class="product-detail-grid">
                 <div class="detail-gallery-card">
-                  <div class="detail-main-visual" style="--detail-start:${activeGallery.start}; --detail-end:${activeGallery.end};">
-                    <span class="detail-visual-badge">${product.badge}</span>
-                    <strong>${activeGallery.title}</strong>
-                    <p>${activeGallery.note}</p>
+                  <div class="detail-main-visual${activeGallery.src ? " has-image" : " is-empty-image-slot"}" style="--detail-start:${activeGallery.start}; --detail-end:${activeGallery.end};" aria-label="${activeGallery.alt}">
+                    ${activeGallery.src ? `<img class="detail-gallery-image" src="${activeGallery.src}" alt="${activeGallery.alt}" />` : ""}
+                    ${activeGallery.src ? "" : `
+                      <div class="detail-empty-visual-copy">
+                        <span class="detail-visual-badge">${product.badge}</span>
+                        <strong>${activeGallery.title}</strong>
+                        <p>${activeGallery.note}</p>
+                      </div>
+                    `}
                   </div>
-                  <div class="detail-thumb-row">
-                    ${galleries
-                      .map(
-                        (item, index) => `
-                          <button class="detail-thumb${index === currentDetailImage ? " is-active" : ""}" type="button" data-detail-image="${index}" style="--detail-start:${item.start}; --detail-end:${item.end};">
-                            <strong>${item.title}</strong>
-                            <span>${index === 0 ? "Main" : `View ${index + 1}`}</span>
-                          </button>
-                        `
-                      )
-                      .join("")}
+                  <div class="css-slider-navigation-container">
+                    <button class="css-slider-button css-slider-prev${currentDetailImage <= 0 ? " disabled" : ""}" type="button" data-detail-slide-action="prev" aria-disabled="${currentDetailImage <= 0 ? "true" : "false"}"${currentDetailImage <= 0 ? " disabled" : ""}>
+                      <svg fill="none" height="13" viewBox="0 0 8 13" width="8" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="#000"><path d="m7.91419 1.41431-6.48529 6.48528-1.4142102-1.41422 6.4852802-6.48527702z"></path><path d="m6.48528 12.9849-6.48528027-6.48532 1.41421027-1.41421 6.48528 6.48523z"></path></g></svg>
+                      <span class="visually-hidden">Previous slide</span>
+                    </button>
+                    <div class="css-slider-dot-navigation" style="display: block; --size: ${Math.max(8, Math.min(12, galleries.length + 7))};" aria-label="Product image slides">
+                      ${galleries
+                        .map(
+                          (item, index) => `
+                            <button class="css-slider-dot${index === currentDetailImage ? " active" : ""}" type="button" data-detail-image="${index}" data-index="${index}" aria-label="Show slide ${index + 1}"${index === currentDetailImage ? ' aria-current="true"' : ""}></button>
+                          `
+                        )
+                        .join("")}
+                    </div>
+                    <button class="css-slider-button css-slider-next${currentDetailImage >= galleries.length - 1 ? " disabled" : ""}" type="button" data-detail-slide-action="next" aria-disabled="${currentDetailImage >= galleries.length - 1 ? "true" : "false"}"${currentDetailImage >= galleries.length - 1 ? " disabled" : ""}>
+                      <svg width="9" height="13" viewBox="0 0 9 13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M0.914169 11.5857L7.39945 5.10041L8.81367 6.51463L2.32838 12.9999L0.914169 11.5857Z" fill="black"></path><path d="M2.34307 0.0151367L8.82835 6.50042L7.41414 7.91463L0.928857 1.42935L2.34307 0.0151367Z" fill="black"></path></svg>
+                      <span class="visually-hidden">Next slide</span>
+                    </button>
+                    <div class="css-slider-index-navigation"><span class="css-slider-current">${currentDetailImage + 1}</span> / <span class="css-slider-total">${galleries.length}</span></div>
                   </div>
                 </div>
 
@@ -3905,8 +4041,9 @@ function productDetailMarkup(product) {
                       <article class="delivery-zone-card">
                         <span class="delivery-zone-icon">${zone.icon}</span>
                         <strong>${zone.title}</strong>
-                        <p>${zone.note}</p>
-                        <span>${zone.eta}</span>
+                        <p class="delivery-zone-note">${zone.note}</p>
+                        <span class="delivery-zone-eta">${zone.eta}</span>
+                        <span class="delivery-zone-eta-mobile">${zone.mobileEta || zone.eta}</span>
                       </article>
                     `
                   )
@@ -3961,13 +4098,6 @@ function productDetailMarkup(product) {
             ${footerMarkup()}
           </div>
         </main>
-        <div class="sticky-mobile-cart">
-          <div class="sticky-mobile-cart-copy">
-            <strong>${money(product.price)}</strong>
-            <span>${currentDetailQty} item selected</span>
-          </div>
-          <button class="button-primary sticky-mobile-cart-button" type="button" data-add-to-cart="true">Add to Cart</button>
-        </div>
       </div>
     </div>
   `;
@@ -4087,11 +4217,20 @@ function renderProductDetail(productId) {
 }
 
 function focusProductDetailBlock() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  scrollToTop();
   window.requestAnimationFrame(() => {
+    scrollToTop();
     const target = document.getElementById('product-page-start');
     if (!(target instanceof HTMLElement)) return;
     target.scrollIntoView({ block: 'start', behavior: 'auto' });
     target.focus({ preventScroll: true });
+    window.setTimeout(scrollToTop, 32);
   });
 }
 
@@ -4102,11 +4241,28 @@ function clearSlider() {
   }
 }
 
+function syncHeroSlide() {
+  if (getCurrentRoute().page !== "home") return false;
+  const slide = heroSlides[activeSlide];
+  const image = document.querySelector(".hero-banner-image");
+  if (!(image instanceof HTMLImageElement) || !slide) return false;
+
+  image.src = slide.image;
+  image.alt = slide.alt;
+  document.querySelectorAll("[data-slide-to]").forEach((button) => {
+    const index = Number(button.getAttribute("data-slide-to")) || 0;
+    button.classList.toggle("is-active", index === activeSlide);
+  });
+  return true;
+}
+
 function restartSlider() {
   clearSlider();
   slideIntervalId = window.setInterval(() => {
     activeSlide = (activeSlide + 1) % heroSlides.length;
-    renderApp();
+    if (!syncHeroSlide()) {
+      renderApp();
+    }
   }, 5500);
 }
 
@@ -4507,7 +4663,9 @@ function attachHeroControls() {
   document.querySelectorAll("[data-slide='prev']").forEach((button) => {
     button.onclick = () => {
       activeSlide = (activeSlide - 1 + heroSlides.length) % heroSlides.length;
-      renderApp();
+      if (!syncHeroSlide()) {
+        renderApp();
+      }
       restartSlider();
     };
   });
@@ -4515,7 +4673,9 @@ function attachHeroControls() {
   document.querySelectorAll("[data-slide='next']").forEach((button) => {
     button.onclick = () => {
       activeSlide = (activeSlide + 1) % heroSlides.length;
-      renderApp();
+      if (!syncHeroSlide()) {
+        renderApp();
+      }
       restartSlider();
     };
   });
@@ -4523,7 +4683,9 @@ function attachHeroControls() {
   document.querySelectorAll("[data-slide-to]").forEach((button) => {
     button.onclick = () => {
       activeSlide = Number(button.getAttribute("data-slide-to")) || 0;
-      renderApp();
+      if (!syncHeroSlide()) {
+        renderApp();
+      }
       restartSlider();
     };
   });
@@ -4633,13 +4795,41 @@ function attachRegisterControls() {
 function attachProductDetailControls(productId) {
   const product = productById(productId);
   if (!product) return;
+  const galleries = galleryItems(product);
+  const rerenderProductDetail = () => {
+    renderProductDetail(product.id);
+    attachSharedControls();
+    attachProductDetailControls(product.id);
+  };
 
   document.querySelectorAll("[data-detail-image]").forEach((button) => {
     button.onclick = () => {
       currentDetailImage = Number(button.getAttribute("data-detail-image")) || 0;
-      renderProductDetail(product.id);
-      attachSharedControls();
-      attachProductDetailControls(product.id);
+      rerenderProductDetail();
+    };
+
+    button.onkeydown = (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      button.click();
+    };
+  });
+
+  document.querySelectorAll("[data-detail-slide-action]").forEach((button) => {
+    const activate = () => {
+      const action = button.getAttribute("data-detail-slide-action");
+      const nextIndex = action === "prev" ? currentDetailImage - 1 : currentDetailImage + 1;
+      const boundedIndex = Math.max(0, Math.min(galleries.length - 1, nextIndex));
+      if (boundedIndex === currentDetailImage) return;
+      currentDetailImage = boundedIndex;
+      rerenderProductDetail();
+    };
+
+    button.onclick = activate;
+    button.onkeydown = (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      activate();
     };
   });
 
